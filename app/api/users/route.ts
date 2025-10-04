@@ -1,7 +1,7 @@
-import { getUserFromToken } from "@/lib/middleware";
-import { dbConnect } from "@/lib/dbConnect";
+import { getUserFromToken } from "@/app/lib/middleware";
+import { dbConnect } from "@/app/lib/dbConnect";
 import { NextResponse } from "next/server";
-import { User } from "@/models/User";
+import { User } from "@/app/models/User";
 
 export async function GET(req: Request) {
   await dbConnect();

@@ -1,5 +1,5 @@
-import mongoose, { Schema, model, models } from "mongoose";
-import bcrypt from "bcryptjs";
+import pkg from "mongoose";
+const { Schema, model, models } = pkg;
 
 const UserSchema = new Schema(
   {
@@ -7,14 +7,10 @@ const UserSchema = new Schema(
     email: { type: String, required: true, unique: true },
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ["user", "admin"], default: "user" },
-    orders: [{ type: Schema.Types.ObjectId, ref: "Order" }]
+    orders: [{ type: Schema.Types.ObjectId, ref: "Order" }],
+    active: { type: Boolean, default: true }
   },
   { timestamps: true }
 );
-
-// Instance method to compare password
-UserSchema.methods.comparePassword = async function (password: string) {
-  return bcrypt.compare(password, this.passwordHash);
-};
 
 export const User = models.User || model("User", UserSchema);

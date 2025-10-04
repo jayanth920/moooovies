@@ -1,7 +1,7 @@
-import { getUserFromToken } from "@/lib/middleware";
+import { getUserFromToken } from "@/app/lib/middleware";
 import { NextResponse } from "next/server";
-import { dbConnect } from "@/lib/dbConnect";
-import { User } from "@/models/User";
+import { dbConnect } from "@/app/lib/dbConnect";
+import { User } from "@/app/models/User";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -24,6 +24,9 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
 
   return NextResponse.json(user);
 }
+
+
+
 
 export async function PUT(
   req: Request,
@@ -54,6 +57,9 @@ export async function PUT(
 
   return NextResponse.json({ message: "User updated", user: updatedUser });
 }
+
+
+
 
 export async function DELETE(
   _: Request,

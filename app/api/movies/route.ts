@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { dbConnect } from "@/lib/dbConnect";
-import { Movie } from "@/models/Movie";
+import { dbConnect } from "@/app/lib/dbConnect";
+import { Movie } from "@/app/models/Movie";
 
 /**
  * GET /api/movies
