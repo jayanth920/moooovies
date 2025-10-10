@@ -10,6 +10,7 @@
     "lint": "eslint",
     "admin-seed": "tsx scripts/seedAdmins.ts",
     "movies-seed": "tsx scripts/seedMovies.ts",
+    "coupons-seed": "tsx scripts/seedCoupons.ts",
     "rmcart": "tsx scripts/rmcart.ts"
   },
   "dependencies": {

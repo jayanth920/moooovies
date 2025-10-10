@@ -3,6 +3,7 @@ import { dbConnect } from "@/app/lib/dbConnect";
 import { Order } from "@/app/models/Order";
 import { getUserFromToken } from "@/app/lib/middleware";
 
+
 export async function GET(req: Request) {
   await dbConnect();
 
@@ -11,8 +12,10 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const orders = await Order.find({ userId: user.userId })
+  // Populate movies.movieId and coupon
+  const orders = await Order.find({ userId: user.id })
     .populate("movies.movieId")
+    .populate("coupon")
     .sort({ createdAt: -1 });
 
   return NextResponse.json(orders);

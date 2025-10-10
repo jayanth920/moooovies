@@ -4,7 +4,7 @@ import { Coupon } from "@/app/models/Coupon";
 import { requireAdmin } from "@/app/lib/auth";
 
 // PUT – Update a coupon
-export async function PUT(req: NextRequest, { params }: any) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   await dbConnect();
 
   const admin = requireAdmin(req);
@@ -12,11 +12,31 @@ export async function PUT(req: NextRequest, { params }: any) {
 
   try {
     const body = await req.json();
-    const { amount, isPercentage, expiresAt, active } = body;
+    const {
+      code,
+      price,
+      isPercentage,
+      minQuantity,
+      minSubtotal,
+      minOrderCount,
+      description,
+      expiresAt,
+      active,
+    } = body;
 
     const updatedCoupon = await Coupon.findByIdAndUpdate(
       params.id,
-      { amount, isPercentage, expiresAt, active },
+      {
+        code,
+        price,
+        isPercentage,
+        minQuantity,
+        minSubtotal,
+        minOrderCount,
+        description,
+        expiresAt,
+        active,
+      },
       { new: true, runValidators: true }
     );
 
@@ -33,7 +53,7 @@ export async function PUT(req: NextRequest, { params }: any) {
 }
 
 // DELETE – Mark inactive OR remove coupon
-export async function DELETE(req: NextRequest, { params }: any) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   await dbConnect();
 
   const admin = requireAdmin(req);

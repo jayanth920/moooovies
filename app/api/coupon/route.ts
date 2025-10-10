@@ -3,7 +3,7 @@ import { Coupon } from "@/app/models/Coupon";
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/app/lib/auth";
 
-// List all discounts (Admin only)
+// GET – List all coupons (Admin only)
 export async function GET(req: Request) {
   await dbConnect();
 
@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   return NextResponse.json(coupons);
 }
 
-// Create a new discount (Admin only)
+// POST – Create a new coupon (Admin only)
 export async function POST(req: Request) {
   await dbConnect();
 
@@ -22,9 +22,9 @@ export async function POST(req: Request) {
   if (!(admin && typeof admin === "object")) return admin;
 
   try {
-    const data = await req.json(); // expects { code, amount, isPercentage?, expiresAt?, active? }
+    const data = await req.json();
     const newCoupon = await Coupon.create(data);
-    return NextResponse.json(Coupon, { status: 201 });
+    return NextResponse.json(newCoupon, { status: 201 });
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message || "Failed to create coupon" },
