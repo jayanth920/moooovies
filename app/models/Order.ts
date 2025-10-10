@@ -12,9 +12,9 @@ const OrderSchema = new Schema({
   ],
   subtotal: { type: Number, required: true },
   tax: { type: Number, required: true },
+  coupon: { type: Schema.Types.ObjectId, ref: "Coupon" }, // optional applied coupon
   discount: { type: Number, default: 0 },
-  total: { type: Number, required: true },
-  status: { type: String, enum: ["pending", "completed"], default: "pending" }
+  total: { type: Number, required: true }
 }, { timestamps: true });
 
 export const Order = models.Order || model("Order", OrderSchema);

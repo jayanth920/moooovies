@@ -37,7 +37,7 @@ export async function GET(req: Request) {
   }
 
   const movies = await Movie.find(filter);
-  return NextResponse.json(movies);
+  return NextResponse.json({movies});
 }
 
 

@@ -20,21 +20,25 @@ export async function POST(req: Request) {
     }
 
     const user = await User.findOne({ email });
-    if (!user)
+    if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch)
+    if (!isMatch) {
       return NextResponse.json({ error: "Invalid password" }, { status: 401 });
+    }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    // Sign only the essentials
+    const token = jwt.sign(
+      { id: user._id.toString(), role: user.role },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     return NextResponse.json({
       message: "Login successful",
       token,
-      userId: user._id,
     });
   } catch (err) {
     console.error(err);

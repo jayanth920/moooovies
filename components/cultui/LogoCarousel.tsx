@@ -7,7 +7,7 @@ import React, {
   useState,
   type SVGProps,
 } from "react"
-import { AnimatePresence, motion } from "motion/react"
+import { AnimatePresence, motion } from "framer-motion"
 
 // Define the structure for our logo objects
 interface Logo {

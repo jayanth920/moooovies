@@ -1,7 +1,7 @@
-import { dbConnect } from "@/lib/dbConnect";
-import { Discount } from "@/models/Discount";
+import { dbConnect } from "@/app/lib/dbConnect";
+import { Coupon } from "@/app/models/Coupon";
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/app/lib/auth";
 
 // List all discounts (Admin only)
 export async function GET(req: Request) {
@@ -10,8 +10,8 @@ export async function GET(req: Request) {
   const admin = requireAdmin(req);
   if (!(admin && typeof admin === "object")) return admin;
 
-  const discounts = await Discount.find().sort({ createdAt: -1 });
-  return NextResponse.json(discounts);
+  const coupons = await Coupon.find().sort({ createdAt: -1 });
+  return NextResponse.json(coupons);
 }
 
 // Create a new discount (Admin only)
@@ -23,11 +23,11 @@ export async function POST(req: Request) {
 
   try {
     const data = await req.json(); // expects { code, amount, isPercentage?, expiresAt?, active? }
-    const newDiscount = await Discount.create(data);
-    return NextResponse.json(newDiscount, { status: 201 });
+    const newCoupon = await Coupon.create(data);
+    return NextResponse.json(Coupon, { status: 201 });
   } catch (err: any) {
     return NextResponse.json(
-      { error: err.message || "Failed to create discount" },
+      { error: err.message || "Failed to create coupon" },
       { status: 500 }
     );
   }

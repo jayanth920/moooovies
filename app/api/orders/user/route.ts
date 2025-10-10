@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { dbConnect } from "@/lib/dbConnect";
-import { Order } from "@/models/Order";
-import { getUserFromToken } from "@/lib/middleware";
+import { dbConnect } from "@/app/lib/dbConnect";
+import { Order } from "@/app/models/Order";
+import { getUserFromToken } from "@/app/lib/middleware";
 
 export async function GET(req: Request) {
   await dbConnect();

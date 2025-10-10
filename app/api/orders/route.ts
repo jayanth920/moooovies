@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { dbConnect } from "@/lib/dbConnect";
-import { Order } from "@/models/Order";
-import { requireAdmin } from "@/lib/auth";
-import { getUserFromToken } from "@/lib/middleware";
+import { dbConnect } from "@/app/lib/dbConnect";
+import { Order } from "@/app/models/Order";
+import { requireAdmin } from "@/app/lib/auth";
+import { getUserFromToken } from "@/app/lib/middleware";
 
 // 🟢 GET – List All Orders (ADMIN ONLY)
 export async function GET(req: Request) {

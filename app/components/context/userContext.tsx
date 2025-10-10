@@ -2,63 +2,90 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
-// Matches your backend User model (but no passwordHash!)
 export type User = {
-  _id: string;
+  id: string;
   name: string;
   email: string;
   role: "user" | "admin";
-  orders?: string[]; // order IDs if you want to keep them cached
+  orders?: string[];
   active: boolean;
 };
 
 type UserContextType = {
   user: User | null;
-  setUser: (user: User | null) => void;
-  setSyncUser: (user: User | null) => void; // updates context + localStorage
+  token: string | null;
+  loading: boolean;
+  setToken: (token: string | null) => void;
   logout: () => void;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUserState] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setTokenState] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Load from localStorage when app mounts
+  // Load token from storage on app mount
   useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) {
-      try {
-        setUserState(JSON.parse(stored));
-      } catch {
-        localStorage.removeItem("user");
-      }
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      setTokenState(storedToken);
+    } else {
+      setLoading(false);
     }
   }, []);
 
-  // Update context state only
-  const setUser = (user: User | null) => {
-    setUserState(user);
-  };
+  // Whenever token changes, fetch the current user
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!token) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
 
-  // Update context + sync with localStorage
-  const setSyncUser = (user: User | null) => {
-    setUserState(user);
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
+      try {
+        const res = await fetch("/api/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Failed to fetch user");
+        const data = await res.json();
+        console.log(data)
+        setUser(data.user);
+      } catch (err) {
+        console.error(err);
+        setUser(null);
+        setTokenState(null);
+        localStorage.removeItem("token");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [token]);
+
+  // Update token + sync to storage
+  const setToken = (token: string | null) => {
+    setTokenState(token);
+    if (token) {
+      localStorage.setItem("token", token);
+      setLoading(true); // trigger refetch of user
     } else {
-      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      setUser(null);
     }
   };
 
-  // Clear user everywhere
+  // Logout clears everything
   const logout = () => {
-    localStorage.removeItem("user");
-    setUserState(null);
+    setToken(null);
+    setUser(null);
   };
 
   return (
-    <UserContext.Provider value={{ user, setUser, setSyncUser, logout }}>
+    <UserContext.Provider value={{ user, token, loading, setToken, logout }}>
       {children}
     </UserContext.Provider>
   );

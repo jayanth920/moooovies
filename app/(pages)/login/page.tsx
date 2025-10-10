@@ -17,23 +17,20 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-  const { user, setSyncUser } = useUser();
+  const { user, token, setToken, loading: authLoading } = useUser();
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user || localStorage.getItem("user")) {
+    if (user && token && !authLoading) {
       router.push("/");
     }
-  }, [user, router]);
+  }, [user, token, authLoading, router]);
 
   const handleAuth = async () => {
-    console.log("user", {email, password})
     setLoading(true);
     try {
       const endpoint = isSignup ? "/api/users/register" : "/api/users/login";
-      const body = isSignup
-        ? { name, email, password }
-        : { email, password };
+      const body = isSignup ? { name, email, password } : { email, password };
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -49,9 +46,8 @@ export default function AuthPage() {
         alert("Signup successful! Please login.");
         setIsSignup(false);
       } else {
-        const { token, user } = await response.json();
-        setSyncUser(user);
-        localStorage.setItem("token", token);
+        const { token } = await response.json();
+        setToken(token); // store token, context will fetch user automatically
         router.push("/");
       }
     } catch (err) {
