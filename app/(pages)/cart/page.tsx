@@ -257,7 +257,7 @@ export default function CartPage() {
           </p>
         )}
         {couponStatus === "invalid" && (
-          <p className="text-red-600 text-sm font-medium">❌ Invalid or expired coupon. Please try another.</p>
+          <p className="text-red-600 text-sm font-medium">❌ Not applicable or expired coupon. Please try another.</p>
         )}
       </div>
 

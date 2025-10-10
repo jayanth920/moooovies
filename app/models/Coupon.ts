@@ -8,6 +8,8 @@ const CouponSchema = new Schema({
   minQuantity: { type: Number, default: 1 }, // e.g., buy 2+ movies
   minSubtotal: { type: Number, default: 0 }, // e.g., subtotal >= $50
   minOrderCount: { type: Number, default: 0 }, // e.g., must have placed 0 orders = first order
+  maxOrderCount: { type: Number, default: null }, // maximum previous orders allowed (null = no limit)
+  specificOrderCount: {type: Number, default: null},
   description: { type: String, default: "" },
   expiresAt: { type: Date },
   active: { type: Boolean, default: true },

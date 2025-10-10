@@ -3,7 +3,7 @@ export const coupons = [
     code: "WELCOME15",
     price: 15,
     isPercentage: true,
-    minOrderCount: 0, // applies only if user has 0 previous orders
+    specificOrderCount: 0,
     description: "Welcome coupon — 15% off your first order!",
     active: true,
   },
