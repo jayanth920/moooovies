@@ -193,7 +193,14 @@ export default function CartPage() {
   };
 
   // ---------------- Render ----------------
-  if (loading) return <p className="p-8">Loading cart...</p>;
+  if (loading && !cartItems.length) {
+    // Only show full loading screen on first load
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <div className="animate-spin w-10 h-10 border-4 border-gray-400 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
   if (!cartItems.length && !orderModalOpen) return <p className="p-8">Your cart is empty.</p>;
 
   return (
@@ -205,7 +212,9 @@ export default function CartPage() {
         {cartItems.map((item) => {
           const price = item.movie.discountPrice ?? item.movie.price;
           return (
-            <div key={item.movieId} className="flex items-center gap-4 border-b pb-4">
+            <div key={item.movieId}
+              className="flex items-center gap-4 border-b pb-4 transition-opacity duration-200"
+              style={{ opacity: updating === item.movieId ? 0.6 : 1 }}>
               <div className="flex items-center gap-4 flex-1">
                 <img src={item.movie.coverImage} alt={item.movie.title} className="w-24 h-36 object-cover rounded" />
                 <div className="flex flex-col gap-1">
@@ -223,10 +232,11 @@ export default function CartPage() {
                     <button onClick={() => updateQuantity(item.movieId, item.quantity + 1)}
                       className="px-2 py-1 border rounded disabled:opacity-50 relative"
                       disabled={updating === item.movieId}>
-                      {updating === item.movieId ? (
-                        <span className="animate-spin block w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full mx-auto"></span>
-                      ) : "+"}
+                      +
                     </button>
+                    {updating === item.movieId && (
+                      <span className="animate-spin w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full"></span>
+                    )}
                     <button onClick={() => removeItem(item.movieId)}
                       className="ml-2 text-red-600 hover:underline"
                       disabled={updating === item.movieId}>Remove</button>
@@ -266,7 +276,7 @@ export default function CartPage() {
         <div className="mt-6 border-t pt-4 flex flex-col gap-2 text-gray-800">
           <div className="flex justify-between"><span>Subtotal:</span><span>${totals.subtotal.toFixed(2)}</span></div>
           <div className="flex justify-between"><span>Coupon Discount:</span><span>-${totals.couponDiscount.toFixed(2)}</span></div>
-          <div className="flex justify-between"><span>Tax:</span><span>${totals.tax.toFixed(2)}</span></div>
+          <div className="flex justify-between"><span>Tax (8.25 %):</span><span>${totals.tax.toFixed(2)}</span></div>
           <div className="flex justify-between font-bold text-lg"><span>Total:</span><span>${totals.total.toFixed(2)}</span></div>
         </div>
       )}
@@ -287,10 +297,13 @@ export default function CartPage() {
               Your order has been successfully placed. The digital movies will be delivered to your registered email within a few minutes.
             </p>
             <p className="mb-4">
-              ✅ Check your <a href="/orders" className="text-blue-600 underline font-medium">latest order</a> and details here.
+              ✅ Check the summary of your <a href="/orders" className="text-blue-600 underline font-medium">latest order</a> here.
             </p>
             <button
-              onClick={() => setOrderModalOpen(false)}
+              onClick={() => {
+                setOrderModalOpen(false);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
               Close

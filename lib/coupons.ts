@@ -49,6 +49,6 @@ export const coupons = [
     minSubtotal: 30,
     description: "Old test coupon — 20% off (expired)",
     expiresAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    active: true,
+    active: false,
   },
 ];

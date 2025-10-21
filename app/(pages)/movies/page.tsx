@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
+import { useRouter } from "next/navigation"; // 👈 add this
+
 
 export default function MoviesPage() {
+  const router = useRouter();
   const [movies, setMovies] = useState<any[]>([]);
   const [filtered, setFiltered] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,6 +25,7 @@ export default function MoviesPage() {
     try {
       const res = await fetch("/api/movies");
       const data = await res.json();
+      console.log(data.movies)
       setMovies(data.movies || []);
       setFiltered(data.movies || []);
     } catch (err) {
@@ -158,9 +162,9 @@ export default function MoviesPage() {
                     onClick={() => addToCart(movie.id)}
                     className={`flex-1 py-1.5 text-sm rounded-lg ${isInCart ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}
                   >
-                    {isInCart ? "Added to Cart" : "Add to Cart"}
+                    {isInCart ? "Added" : "Add to Cart"}
                   </button>
-                  <button className="flex-1 border border-gray-300 py-1.5 text-sm rounded-lg hover:bg-gray-100">Explore</button>
+                  <button onClick={() => router.push(`/movies/${movie._id}`)} className="flex-1 border border-gray-300 py-1.5 text-sm rounded-lg hover:bg-gray-100">Explore</button>
                 </div>
               </div>
             </div>

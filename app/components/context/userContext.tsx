@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
 export type User = {
@@ -16,6 +17,8 @@ type UserContextType = {
   token: string | null;
   loading: boolean;
   setToken: (token: string | null) => void;
+  setUser: (user: User | null) => void; // add this
+
   logout: () => void;
 };
 
@@ -25,6 +28,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setTokenState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const router = useRouter()
 
   // Load token from storage on app mount
   useEffect(() => {
@@ -82,10 +87,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setToken(null);
     setUser(null);
+    router.push("/")
   };
 
   return (
-    <UserContext.Provider value={{ user, token, loading, setToken, logout }}>
+    <UserContext.Provider value={{ user, token, loading, setToken, setUser, logout }}>
       {children}
     </UserContext.Provider>
   );

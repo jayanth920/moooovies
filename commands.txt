@@ -1,2 +1,3 @@
 Admin seeding: npm run admin-seed  
 Movies seeding: npm run movies-seed
+Coupon seeding: npm run coupons-seed

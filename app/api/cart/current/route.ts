@@ -133,7 +133,7 @@ if (couponCode) {
     },
   };
 
-  console.log(res);
+  console.log("RESULT", res);
 
   return NextResponse.json({
     cart: { items: enrichedItems },
