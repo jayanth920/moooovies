@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useUser } from "./components/context/userContext";
 import { ChevronDown } from "lucide-react";
+import Navbar from "./components/Navbar";
 
 export default function Home() {
   const router = useRouter();
@@ -19,6 +20,8 @@ export default function Home() {
   }
 
   return (
+    <>
+    <Navbar/>
     <div className="font-sans min-h-screen flex flex-col">
       {/* Main content */}
       <main className="flex-grow flex flex-col items-center justify-center text-center">
@@ -30,5 +33,6 @@ export default function Home() {
         )}
       </main>
     </div>
+    </>
   );
 }

@@ -28,6 +28,16 @@ export default function Navbar() {
         <button onClick={() => router.push("/orders")} className="hover:text-blue-400">
           Orders
         </button>
+
+        {/* Admin Dashboard tab only visible for admins */}
+        {user?.role === "admin" && (
+          <button
+            onClick={() => router.push("/admin-dashboard")}
+            className="hover:text-blue-400 font-semibold"
+          >
+            Admin Dashboard
+          </button>
+        )}
       </div>
 
       {/* Right side - Profile or Login */}
