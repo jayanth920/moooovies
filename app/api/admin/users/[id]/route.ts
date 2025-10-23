@@ -28,12 +28,10 @@ export async function GET(req: Request, { params }: RouteParams) {
       );
     }
 
-    // Get user's orders with full details
-    const orders = await Order.find({ userId: id })
-      .populate("movies.movieId", "title")
-      .sort({ createdAt: -1 });
+    // Get user's orders - NO POPULATION NEEDED (all data in snapshots)
+    const orders = await Order.find({ userId: id }).sort({ createdAt: -1 });
 
-    // Calculate statistics
+    // Calculate statistics from the new order structure
     const totalSpent = orders.reduce((sum, order) => sum + order.total, 0);
     const averageOrder = orders.length > 0 ? totalSpent / orders.length : 0;
     const lastOrder = orders.length > 0 ? orders[0].createdAt : null;
@@ -42,16 +40,15 @@ export async function GET(req: Request, { params }: RouteParams) {
       success: true,
       user: {
         ...user.toObject(),
-        orders,
+        orders, // This now contains orders with movie snapshots
         ordersCount: orders.length,
         stats: {
           totalSpent,
           averageOrder,
-          lastOrder
-        }
-      }
+          lastOrder,
+        },
+      },
     });
-
   } catch (error) {
     console.error("Error fetching user:", error);
     return NextResponse.json(
@@ -72,9 +69,9 @@ export async function PUT(req: Request, { params }: RouteParams) {
 
     // Check if email already exists (for other users)
     if (data.email) {
-      const existingUser = await User.findOne({ 
-        email: data.email, 
-        _id: { $ne: id } 
+      const existingUser = await User.findOne({
+        email: data.email,
+        _id: { $ne: id },
       });
       if (existingUser) {
         return NextResponse.json(
@@ -112,9 +109,8 @@ export async function PUT(req: Request, { params }: RouteParams) {
     return NextResponse.json({
       success: true,
       message: "User updated successfully",
-      user: updatedUser
+      user: updatedUser,
     });
-
   } catch (error) {
     console.error("Error updating user:", error);
     return NextResponse.json(
@@ -166,10 +162,9 @@ export async function DELETE(req: Request, { params }: RouteParams) {
       user: {
         _id: user._id,
         name: user.name,
-        email: user.email
-      }
+        email: user.email,
+      },
     });
-
   } catch (error) {
     console.error("Error permanently deleting user:", error);
     return NextResponse.json(

@@ -41,6 +41,9 @@ export default function BarChart({ data, label = "Value", backgroundColor = "rgb
 
   const options = {
     responsive: true,
+    animation: {
+      duration: 0 // Disable animations
+    },
     plugins: {
       legend: {
         position: 'top' as const,

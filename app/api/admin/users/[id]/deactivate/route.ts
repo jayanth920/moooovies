@@ -3,22 +3,20 @@ import { dbConnect } from "@/app/lib/dbConnect";
 import { User } from "@/app/models/User";
 import { requireAdmin } from "@/app/lib/auth";
 
-export async function POST(req: Request, { params }: any) {
+// Add proper type for params
+interface RouteParams {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export async function POST(req: Request, { params }: RouteParams) {
   try {
     const authResult = requireAdmin(req);
     if (authResult instanceof NextResponse) return authResult;
 
     await dbConnect();
-    const { id } = params;
-    const { action } = await req.json(); // Get action from request body
-
-    // Prevent admin from deactivating themselves
-    if (authResult.id === id && action === "deactivate") {
-      return NextResponse.json(
-        { success: false, error: "Cannot deactivate your own account" },
-        { status: 400 }
-      );
-    }
+    const { id } = await params;
 
     // Check if user exists
     const user = await User.findById(id);
@@ -29,24 +27,35 @@ export async function POST(req: Request, { params }: any) {
       );
     }
 
-    // Prevent deactivation of admin accounts
-    if (user.role === "admin" && action === "deactivate") {
+    // Prevent admin from deactivating themselves
+    if (authResult.id === id) {
       return NextResponse.json(
-        { success: false, error: "Cannot deactivate admin accounts" },
+        { success: false, error: "Cannot modify your own account" },
         { status: 400 }
       );
     }
 
-    const newStatus = action === "deactivate" ? false : true;
+    // Prevent deactivation of admin accounts
+    if (user.role === "admin") {
+      return NextResponse.json(
+        { success: false, error: "Cannot modify admin accounts" },
+        { status: 400 }
+      );
+    }
+
+    // Toggle the active status
+    const newStatus = !user.active;
     const updatedUser = await User.findByIdAndUpdate(
       id,
       { active: newStatus },
       { new: true }
     ).select("-passwordHash");
 
+    const action = newStatus ? "activated" : "deactivated";
+
     return NextResponse.json({
       success: true,
-      message: `User ${action === "deactivate" ? "deactivated" : "activated"} successfully`,
+      message: `User ${action} successfully`,
       user: updatedUser
     });
 

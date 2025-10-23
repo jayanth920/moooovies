@@ -150,9 +150,11 @@ export default function CartPage() {
   };
 
   // ---------------- Place Order ----------------
+
   const placeOrder = async () => {
     if (!totals || !cartItems.length) return;
     setPlacingOrder(true);
+
     try {
       const res = await fetch("/api/orders", {
         method: "POST",
@@ -170,10 +172,25 @@ export default function CartPage() {
         })
       });
 
+      // Check if response is OK before parsing JSON
+      if (!res.ok) {
+        // Try to get error message from response
+        let errorMessage = "Failed to place order";
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // If can't parse JSON, use status text
+          errorMessage = res.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Now safely parse the JSON
       const data = await res.json();
       console.log("DATA", data);
 
-      if (res.status >= 200 && res.status < 300) {
+      if (data.success) {
         // Open success modal
         setOrderModalOpen(true);
         // Clear cart and totals on frontend (backend already emptied)
@@ -185,8 +202,8 @@ export default function CartPage() {
         alert(data.error || "Failed to place order");
       }
     } catch (err) {
-      console.error(err);
-      alert("Failed to place order, try again.");
+      console.error("Order error:", err);
+      alert(err instanceof Error ? err.message : "Failed to place order, try again.");
     } finally {
       setPlacingOrder(false);
     }

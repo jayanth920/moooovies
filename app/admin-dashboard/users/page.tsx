@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Trash2, Edit3, Plus, BarChart3, Download, RefreshCw, 
-  Users, UserCheck, UserX, Shield, ShieldOff 
+  Users, UserCheck, UserX, Shield, ShieldOff, Filter
 } from "lucide-react";
 import UserStatsCharts from "../components/UserStatsCharts";
 import { useUser } from "@/app/components/context/userContext";
@@ -218,35 +218,35 @@ export default function AdminUsersPage() {
   };
 
   // Individual user actions (kept for single user operations)
-  const handleDeactivateUser = async (userId: string, userName: string) => {
-    if (!confirm(`Are you sure you want to deactivate ${userName}? They will not be able to log in but their data will be preserved.`)) return;
+  // const handleDeactivateUser = async (userId: string, userName: string) => {
+  //   if (!confirm(`Are you sure you want to deactivate ${userName}? They will not be able to log in but their data will be preserved.`)) return;
 
-    if (!token) {
-      alert("Authentication required");
-      return;
-    }
+  //   if (!token) {
+  //     alert("Authentication required");
+  //     return;
+  //   }
 
-    try {
-      const response = await fetch(`/api/admin/users/${userId}/deactivate`, {
-        method: "POST",
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+  //   try {
+  //     const response = await fetch(`/api/admin/users/${userId}/deactivate`, {
+  //       method: "POST",
+  //       headers: {
+  //         'Authorization': `Bearer ${token}`,
+  //       },
+  //     });
 
-      const result = await response.json();
+  //     const result = await response.json();
       
-      if (result.success) {
-        alert("User deactivated successfully!");
-        fetchUsers();
-      } else {
-        alert(result.error);
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Failed to deactivate user");
-    }
-  };
+  //     if (result.success) {
+  //       alert("User deactivated successfully!");
+  //       fetchUsers();
+  //     } else {
+  //       alert(result.error);
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     alert("Failed to deactivate user");
+  //   }
+  // };
 
   const handlePermanentDelete = async (userId: string, userName: string) => {
     if (!confirm(`⚠️ DANGER: This will PERMANENTLY DELETE user "${userName}" and ALL their data. This action cannot be undone! Are you absolutely sure?`)) return;
@@ -286,129 +286,149 @@ export default function AdminUsersPage() {
     );
   }
 
-  return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Users Manager 👥</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={() => router.push('/admin-dashboard/users/add')}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 transition-colors"
-          >
-            <Plus size={18} /> Add User
-          </button>
-          <button
-            onClick={() => setShowStats(!showStats)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
-          >
-            <BarChart3 size={18} /> 
-            {showStats ? "Hide Stats" : "Show Stats"}
-          </button>
-          <button
-            onClick={toggleSelectAll}
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            {selected.length === filteredUsers.length ? "Deselect All" : "Select All"}
-          </button>
-          <button
-            onClick={handleExport}
-            disabled={selected.length === 0}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
-          >
-            <Download size={18} /> Export ({selected.length})
-          </button>
-          <button
-            onClick={fetchUsers}
-            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2 transition-colors"
-          >
-            <RefreshCw size={18} /> Refresh
-          </button>
-        </div>
+return (
+  <div className="p-8">
+    <div className="flex justify-between items-center mb-6">
+      <h1 className="text-3xl font-bold">Users Manager 👥</h1>
+      <div className="flex gap-2">
+        <button
+          onClick={() => router.push('/admin-dashboard/users/add')}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 transition-colors"
+        >
+          <Plus size={18} /> Add User
+        </button>
+        <button
+          onClick={() => setShowStats(!showStats)}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
+        >
+          <BarChart3 size={18} /> 
+          {showStats ? "Hide Stats" : "Show Stats"}
+        </button>
+        <button
+          onClick={toggleSelectAll}
+          className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+        >
+          {selected.length === filteredUsers.length ? "Deselect All" : "Select All"}
+        </button>
+        <button
+          onClick={handleExport}
+          disabled={selected.length === 0}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+        >
+          <Download size={18} /> Export ({selected.length})
+        </button>
+        <button
+          onClick={fetchUsers}
+          className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2 transition-colors"
+        >
+          <RefreshCw size={18} /> Refresh
+        </button>
       </div>
+    </div>
 
-      {/* Statistics Charts */}
-      {showStats && <UserStatsCharts />}
+    {/* Statistics Charts */}
+    {showStats && <UserStatsCharts />}
 
-      {/* Bulk Actions - UPDATED WITH NEW BULK API */}
-      {selected.length > 0 && (
-        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
-              <span className="font-semibold text-blue-800 text-lg">
-                {selected.length} user(s) selected
-              </span>
+    {/* Bulk Actions - UPDATED WITH NEW BULK API */}
+    {selected.length > 0 && (
+      <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-4">
+            <span className="font-semibold text-blue-800 text-lg">
+              {selected.length} user(s) selected
+            </span>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Change Roles */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-blue-800">
+                Change Roles:
+              </label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleBulkAction("change-role", { role: "user" })}
+                  className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm transition-colors flex items-center gap-1"
+                >
+                  <UserCheck size={14} /> User
+                </button>
+                <button
+                  onClick={() => handleBulkAction("change-role", { role: "admin" })}
+                  className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm transition-colors flex items-center gap-1"
+                >
+                  <Shield size={14} /> Admin
+                </button>
+              </div>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Change Roles */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-blue-800">
-                  Change Roles:
-                </label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleBulkAction("change-role", { role: "user" })}
-                    className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm transition-colors flex items-center gap-1"
-                  >
-                    <UserCheck size={14} /> User
-                  </button>
-                  <button
-                    onClick={() => handleBulkAction("change-role", { role: "admin" })}
-                    className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm transition-colors flex items-center gap-1"
-                  >
-                    <Shield size={14} /> Admin
-                  </button>
-                </div>
-              </div>
 
-              {/* Change Status */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-blue-800">
-                  Change Status:
-                </label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleBulkAction("change-status", { active: true })}
-                    className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm transition-colors flex items-center gap-1"
-                  >
-                    <UserCheck size={14} /> Activate
-                  </button>
-                  <button
-                    onClick={() => handleBulkAction("change-status", { active: false })}
-                    className="px-3 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 text-sm transition-colors flex items-center gap-1"
-                  >
-                    <UserX size={14} /> Deactivate
-                  </button>
-                </div>
+            {/* Change Status */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-blue-800">
+                Change Status:
+              </label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleBulkAction("change-status", { active: true })}
+                  className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm transition-colors flex items-center gap-1"
+                >
+                  <UserCheck size={14} /> Activate
+                </button>
+                <button
+                  onClick={() => handleBulkAction("change-status", { active: false })}
+                  className="px-3 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 text-sm transition-colors flex items-center gap-1"
+                >
+                  <UserX size={14} /> Deactivate
+                </button>
               </div>
+            </div>
 
-              {/* Delete Actions */}
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-blue-800">
-                  Delete Actions:
-                </label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleBulkAction("delete")}
-                    className="px-3 py-1 bg-red-700 text-white rounded hover:bg-red-800 text-sm transition-colors flex items-center gap-1 justify-center"
-                  >
-                    <Trash2 size={14} /> Delete Permanently
-                  </button>
-                </div>
+            {/* Delete Actions */}
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-blue-800">
+                Delete Actions:
+              </label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleBulkAction("delete")}
+                  className="px-3 py-1 bg-red-700 text-white rounded hover:bg-red-800 text-sm transition-colors flex items-center gap-1 justify-center"
+                >
+                  <Trash2 size={14} /> Delete Permanently
+                </button>
               </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
-      {/* Filters */}
-      <div className="mb-6 flex flex-wrap gap-4 items-center">
+    {/* Filters - Fixed container */}
+    <div className="mb-6 bg-white p-4 rounded-lg shadow border">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold flex items-center gap-2">
+          <Filter size={20} />
+          Filters
+        </h3>
+        <button
+          onClick={() => {
+            setSearch("");
+            setRoleFilter("");
+            setStatusFilter("");
+            setSortBy("createdAt");
+            setSortOrder("desc");
+          }}
+          className="text-sm text-red-600 hover:text-red-800"
+        >
+          Clear All
+        </button>
+      </div>
+      
+      <div className="flex flex-wrap gap-4 items-center max-h-32 overflow-y-auto">
         <input
           type="text"
           placeholder="Search by name or email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border border-gray-300 rounded-lg px-4 py-2 w-full max-w-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border border-gray-300 rounded-lg px-4 py-2 w-80 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         
         <select
@@ -452,9 +472,11 @@ export default function AdminUsersPage() {
           <option value="asc">Ascending</option>
         </select>
       </div>
+    </div>
 
-      {/* Users Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+    {/* Users Table - Fixed container that grows/shrinks with content */}
+    <div className="bg-white rounded-lg shadow overflow-hidden min-h-[400px] flex flex-col">
+      <div className="flex-1">
         <table className="w-full">
           <thead className="bg-gray-50 border-b">
             <tr>
@@ -537,12 +559,6 @@ export default function AdminUsersPage() {
                       <Edit3 size={16} /> Edit
                     </button>
                     <button
-                      onClick={() => handleDeactivateUser(user._id, user.name)}
-                      className="text-orange-600 hover:text-orange-900 flex items-center gap-1"
-                    >
-                      <UserX size={16} /> Deactivate
-                    </button>
-                    <button
                       onClick={() => handlePermanentDelete(user._id, user.name)}
                       className="text-red-600 hover:text-red-900 flex items-center gap-1"
                     >
@@ -569,5 +585,6 @@ export default function AdminUsersPage() {
         )}
       </div>
     </div>
-  );
+  </div>
+);
 }

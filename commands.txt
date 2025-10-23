@@ -1,3 +1,7 @@
 Admin seeding: npm run admin-seed  
 Movies seeding: npm run movies-seed
 Coupon seeding: npm run coupons-seed
+Carts removing: npm run rmcarts
+Orders removing: npm run rmorders
+
+To get the file structure: find . -maxdepth 3 -type d \( -name "node_modules" -o -name ".git" \) -prune -o -print

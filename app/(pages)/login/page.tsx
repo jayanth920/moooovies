@@ -15,6 +15,7 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const router = useRouter();
   const { user, token, setToken, loading: authLoading } = useUser();
@@ -28,6 +29,8 @@ export default function AuthPage() {
 
   const handleAuth = async () => {
     setLoading(true);
+    setError(""); // Clear previous errors
+
     try {
       const endpoint = isSignup ? "/api/users/register" : "/api/users/login";
       const body = isSignup ? { name, email, password } : { email, password };
@@ -38,21 +41,29 @@ export default function AuthPage() {
         body: JSON.stringify(body),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(`${isSignup ? "Signup" : "Login"} failed`);
+        // Set error message without throwing an error
+        setError(data.error || `${isSignup ? "Signup" : "Login"} failed`);
+        return; // Exit early
       }
 
       if (isSignup) {
         alert("Signup successful! Please login.");
         setIsSignup(false);
+        setName("");
+        setEmail("");
+        setPassword("");
       } else {
-        const { token } = await response.json();
+        const { token } = data;
         setToken(token); // store token, context will fetch user automatically
         router.push("/");
       }
     } catch (err) {
       console.error(err);
-      alert("Authentication failed. Please check your credentials.");
+      // Only set generic error for network issues
+      setError("Authentication failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -95,6 +106,13 @@ export default function AuthPage() {
             />
           </div>
 
+          {/* Error Message Display */}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-sm text-red-600 text-center">{error}</p>
+            </div>
+          )}
+
           <Button className="w-full" onClick={handleAuth} disabled={loading}>
             {loading ? (
               <Loader2 className="animate-spin h-4 w-4" />
@@ -107,7 +125,13 @@ export default function AuthPage() {
 
           <button
             className="text-sm text-blue-500 underline w-full text-center"
-            onClick={() => setIsSignup(!isSignup)}
+            onClick={() => {
+              setIsSignup(!isSignup);
+              setError(""); // Clear error when switching modes
+              setName("");
+              setEmail("");
+              setPassword("");
+            }}
           >
             {isSignup
               ? "Already have an account? Login"

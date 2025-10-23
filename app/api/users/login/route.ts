@@ -24,6 +24,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Check if user account is active
+    if (!user.active) {
+      return NextResponse.json({ error: "Account is deactivated. Please contact an administrator." }, { status: 403 });
+    }
+
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       return NextResponse.json({ error: "Invalid password" }, { status: 401 });
