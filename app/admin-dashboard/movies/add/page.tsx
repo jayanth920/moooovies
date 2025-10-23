@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
 
 const genreOptions = [
@@ -16,13 +16,9 @@ const languageOptions = [
 
 const pgAgeOptions = ["G", "PG", "PG-13", "R", "NC-17"];
 
-export default function MovieEditPage() {
-  const { id } = useParams();
+export default function AddMoviePage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [movie, setMovie] = useState<any>(null);
-
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     id: "",
     title: "",
@@ -41,44 +37,6 @@ export default function MovieEditPage() {
     comingSoon: false,
     languages: [] as string[],
   });
-
-  useEffect(() => {
-    const fetchMovie = async () => {
-      try {
-        const res = await fetch(`/api/movies/${id}`);
-        if (!res.ok) throw new Error("Failed to fetch movie");
-        const movieData = await res.json();
-        setMovie(movieData);
-        
-        // Populate form with existing data
-        setFormData({
-          id: movieData.id?.toString() || "",
-          title: movieData.title || "",
-          overview: movieData.overview || "",
-          description: movieData.description || "",
-          director: movieData.director || "",
-          screenplay: movieData.screenplay || "",
-          pgAge: movieData.pgAge || "PG",
-          genre: movieData.genre || [],
-          releaseYear: movieData.releaseYear || new Date().getFullYear(),
-          price: movieData.price?.toString() || "",
-          discountPrice: movieData.discountPrice?.toString() || "",
-          quantity: movieData.quantity?.toString() || "",
-          coverImage: movieData.coverImage || "",
-          featured: movieData.featured || false,
-          comingSoon: movieData.comingSoon || false,
-          languages: movieData.languages || [],
-        });
-      } catch (err) {
-        console.error("Error fetching movie:", err);
-        alert("Failed to load movie");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchMovie();
-  }, [id]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -108,7 +66,7 @@ export default function MovieEditPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
+    setLoading(true);
 
     try {
       const movieData = {
@@ -118,12 +76,14 @@ export default function MovieEditPage() {
         discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : null,
         quantity: parseInt(formData.quantity),
         releaseYear: parseInt(formData.releaseYear.toString()),
-        // Keep existing rating if it exists
-        rating: movie?.rating || { average: 0, count: 0 }
+        rating: {
+          average: 0,
+          count: 0
+        }
       };
 
-      const response = await fetch(`/api/movies/${id}`, {
-        method: "PUT",
+      const response = await fetch("/api/movies", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -131,39 +91,19 @@ export default function MovieEditPage() {
       });
 
       if (response.ok) {
-        alert("Movie updated successfully!");
+        alert("Movie added successfully!");
         router.push("/admin-dashboard/movies");
       } else {
         const error = await response.json();
         alert(`Error: ${error.error}`);
       }
     } catch (error) {
-      console.error("Error updating movie:", error);
-      alert("Failed to update movie");
+      console.error("Error adding movie:", error);
+      alert("Failed to add movie");
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="p-8 max-w-4xl mx-auto">
-        <div className="flex justify-center items-center h-64">
-          <div className="text-lg">Loading movie...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!movie) {
-    return (
-      <div className="p-8 max-w-4xl mx-auto">
-        <div className="flex justify-center items-center h-64">
-          <div className="text-red-600 text-lg">Movie not found</div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
@@ -175,7 +115,7 @@ export default function MovieEditPage() {
           <ArrowLeft size={20} />
           Back
         </button>
-        <h1 className="text-3xl font-bold">Edit Movie</h1>
+        <h1 className="text-3xl font-bold">Add New Movie</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6">
@@ -184,20 +124,6 @@ export default function MovieEditPage() {
           <div className="space-y-4">
             <h2 className="text-xl font-semibold border-b pb-2">Basic Information</h2>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Movie ID
-              </label>
-              <input
-                type="number"
-                name="id"
-                value={formData.id}
-                onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Unique numeric ID"
-              />
-            </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Title *
@@ -249,20 +175,7 @@ export default function MovieEditPage() {
                 value={formData.coverImage}
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="https://example.com/image.jpg"
               />
-              {formData.coverImage && (
-                <div className="mt-2">
-                  <img 
-                    src={formData.coverImage} 
-                    alt="Cover preview" 
-                    className="h-32 object-cover rounded border"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                </div>
-              )}
             </div>
           </div>
 
@@ -297,7 +210,6 @@ export default function MovieEditPage() {
                   value={formData.discountPrice}
                   onChange={handleInputChange}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Leave empty for no discount"
                 />
               </div>
             </div>
@@ -398,17 +310,6 @@ export default function MovieEditPage() {
                 <span className="text-sm font-medium text-gray-700">Coming Soon</span>
               </label>
             </div>
-
-            {/* Rating Display (Read-only) */}
-            {movie.rating && (
-              <div className="bg-gray-50 p-3 rounded border">
-                <h3 className="text-sm font-medium text-gray-700 mb-1">Current Rating</h3>
-                <div className="text-sm text-gray-600">
-                  Average: {movie.rating.average} / 10<br />
-                  Based on {movie.rating.count} reviews
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Genres */}
@@ -451,18 +352,18 @@ export default function MovieEditPage() {
         <div className="mt-8 flex justify-end gap-4">
           <button
             type="button"
-            onClick={() => router.push("/admin-dashboard/movies")}
+            onClick={() => router.back()}
             className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
           >
             Cancel
           </button>
           <button
             type="submit"
-            disabled={saving}
+            disabled={loading}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
           >
             <Save size={16} />
-            {saving ? "Saving..." : "Save Changes"}
+            {loading ? "Adding..." : "Add Movie"}
           </button>
         </div>
       </form>

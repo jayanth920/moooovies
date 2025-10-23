@@ -297,7 +297,7 @@ export default function CartPage() {
               Your order has been successfully placed. The digital movies will be delivered to your registered email within a few minutes.
             </p>
             <p className="mb-4">
-              ✅ Check the summary of your <a href="/orders" className="text-blue-600 underline font-medium">latest order</a> here.
+              ✅ Check the summary of your latest order <a href="/orders" className="text-blue-600 underline font-medium">here</a>.
             </p>
             <button
               onClick={() => {

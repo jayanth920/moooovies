@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Edit3, Grid, List } from "lucide-react";
+import { Trash2, Edit3, Grid, List, BarChart3, Plus } from "lucide-react";
+import MovieStatsCharts from "../components/MovieStatsCharts";
 
 export default function AdminMoviesPage() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function AdminMoviesPage() {
   const [sortBy, setSortBy] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showStats, setShowStats] = useState(true);
 
   const fetchMovies = async () => {
     try {
@@ -92,8 +94,14 @@ export default function AdminMoviesPage() {
     );
   };
 
-  const selectAll = () => setSelected(filtered.map((m) => m._id));
-  const deselectAll = () => setSelected([]);
+  // Single toggle function for Select All / Deselect All
+  const toggleSelectAll = () => {
+    if (selected.length === filtered.length) {
+      setSelected([]);
+    } else {
+      setSelected(filtered.map((m) => m._id));
+    }
+  };
 
   const deleteSelected = async () => {
     if (selected.length === 0) return alert("No movies selected");
@@ -130,34 +138,45 @@ export default function AdminMoviesPage() {
         <h1 className="text-3xl font-bold">Movies Manager 🎬</h1>
         <div className="flex gap-2">
           <button
-            onClick={selectAll}
-            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+            onClick={() => router.push('/admin-dashboard/movies/add')}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 transition-colors"
           >
-            Select All
+            <Plus size={18} /> Add Movie
           </button>
           <button
-            onClick={deselectAll}
-            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+            onClick={() => setShowStats(!showStats)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
           >
-            Deselect All
+            <BarChart3 size={18} /> 
+            {showStats ? "Hide Stats" : "Show Stats"}
+          </button>
+          <button
+            onClick={toggleSelectAll}
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            {selected.length === filtered.length ? "Deselect All" : "Select All"}
           </button>
           <button
             onClick={deleteSelected}
-            className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1"
+            disabled={selected.length === 0}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
           >
-            <Trash2 size={16} /> Delete Selected
+            <Trash2 size={18} /> Delete ({selected.length})
           </button>
           <button
             onClick={() =>
               setViewMode((prev) => (prev === "grid" ? "list" : "grid"))
             }
-            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1"
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2 transition-colors"
           >
-            {viewMode === "grid" ? <List size={16} /> : <Grid size={16} />}{" "}
+            {viewMode === "grid" ? <List size={18} /> : <Grid size={18} />}{" "}
             {viewMode === "grid" ? "List" : "Grid"}
           </button>
         </div>
       </div>
+
+      {/* Statistics Charts */}
+      {showStats && <MovieStatsCharts />}
 
       {/* Filters */}
       <div className="mb-6 flex flex-wrap gap-4 items-center">
@@ -166,12 +185,12 @@ export default function AdminMoviesPage() {
           placeholder="Search movies..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border border-gray-300 rounded-lg px-4 py-2 w-full max-w-md"
+          className="border border-gray-300 rounded-lg px-4 py-2 w-full max-w-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <select
           value={genreFilter}
           onChange={(e) => setGenreFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2"
+          className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Genres</option>
           {allGenres.map((g) => (
@@ -183,7 +202,7 @@ export default function AdminMoviesPage() {
         <select
           value={languageFilter}
           onChange={(e) => setLanguageFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2"
+          className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Languages</option>
           {allLanguages.map((l) => (
@@ -192,34 +211,37 @@ export default function AdminMoviesPage() {
             </option>
           ))}
         </select>
-        <label className="flex items-center gap-1">
+        <label className="flex items-center gap-2">
           <input
             type="checkbox"
             checked={availabilityOnly}
             onChange={() => setAvailabilityOnly(!availabilityOnly)}
+            className="rounded focus:ring-blue-500"
           />
           Available Only
         </label>
-        <label className="flex items-center gap-1">
+        <label className="flex items-center gap-2">
           <input
             type="checkbox"
             checked={comingSoonOnly}
             onChange={() => setComingSoonOnly(!comingSoonOnly)}
+            className="rounded focus:ring-blue-500"
           />
           Coming Soon
         </label>
-        <label className="flex items-center gap-1">
+        <label className="flex items-center gap-2">
           <input
             type="checkbox"
             checked={discountOnly}
             onChange={() => setDiscountOnly(!discountOnly)}
+            className="rounded focus:ring-blue-500"
           />
           Discounted
         </label>
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2"
+          className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">Sort By</option>
           <option value="newest">Newest Releases</option>
@@ -234,52 +256,100 @@ export default function AdminMoviesPage() {
       <div
         className={`${
           viewMode === "grid"
-            ? "grid grid-cols-2 md:grid-cols-4 gap-4"
-            : "flex flex-col gap-2"
+            ? "grid grid-cols-2 md:grid-cols-4 gap-6"
+            : "flex flex-col gap-4"
         }`}
       >
         {filtered.map((movie) => (
           <div
             key={movie._id}
-            className={`bg-white rounded-lg shadow p-4 flex ${
-              viewMode === "list" ? "flex-row items-center gap-4" : "flex-col"
-            }`}
+            className={`bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow ${
+              viewMode === "list" ? "flex items-center p-4" : "flex flex-col"
+            } relative group`}
           >
-            <input
-              type="checkbox"
-              checked={selected.includes(movie._id)}
-              onChange={() => toggleSelect(movie._id)}
-              className="mr-2"
-            />
-            <img
-              src={
-                movie.coverImage ||
-                "https://via.placeholder.com/200x300?text=No+Image"
-              }
-              alt={movie.title}
-              className={`rounded ${
-                viewMode === "list"
-                  ? "w-16 h-20 object-cover"
-                  : "w-full h-64 object-cover"
-              }`}
-            />
+            {/* Checkbox - Positioned differently based on view mode */}
+            {viewMode === "list" ? (
+              <input
+                type="checkbox"
+                checked={selected.includes(movie._id)}
+                onChange={() => toggleSelect(movie._id)}
+                className="mr-4 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+            ) : (
+              <input
+                type="checkbox"
+                checked={selected.includes(movie._id)}
+                onChange={() => toggleSelect(movie._id)}
+                className="absolute top-3 right-3 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+              />
+            )}
+
+            {/* Image */}
+            <div className={viewMode === "list" ? "flex-shrink-0" : ""}>
+              <img
+                src={
+                  movie.coverImage ||
+                  "https://via.placeholder.com/200x300?text=No+Image"
+                }
+                alt={movie.title}
+                className={`${
+                  viewMode === "list"
+                    ? "w-20 h-28 object-cover rounded-lg"
+                    : "w-full h-auto rounded-t-xl"
+                }`}
+              />
+            </div>
+
+            {/* Content */}
             <div
-              className={`flex-1 ${
-                viewMode === "list" ? "flex justify-between items-center" : ""
+              className={`${
+                viewMode === "list" 
+                  ? "flex-1 flex justify-between items-center ml-4" 
+                  : "p-4 flex-1 flex flex-col"
               }`}
             >
-              <div>
-                <h2 className="font-semibold">{movie.title}</h2>
-                <p className="text-sm text-gray-600">{movie.genre.join(", ")}</p>
-                <p className="text-sm text-gray-500">
-                  ${movie.discountPrice || movie.price}
+              <div className={viewMode === "grid" ? "flex-1" : ""}>
+                <h2 className="font-bold text-lg text-gray-800 mb-1 line-clamp-1">
+                  {movie.title}
+                </h2>
+                <p className="text-sm text-gray-600 mb-2">
+                  {movie.genre.join(", ")}
                 </p>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg font-bold text-gray-900">
+                    ${movie.discountPrice || movie.price}
+                  </span>
+                  {movie.discountPrice && (
+                    <span className="text-sm text-gray-500 line-through">
+                      ${movie.price}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-4 text-xs text-gray-500">
+                  <span>Stock: {movie.quantity}</span>
+                  {movie.comingSoon && (
+                    <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+                      Coming Soon
+                    </span>
+                  )}
+                  {movie.featured && (
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                      Featured
+                    </span>
+                  )}
+                </div>
               </div>
+              
+              {/* Edit Button */}
               <button
                 onClick={() =>
                   router.push(`/admin-dashboard/movies/${movie._id}`)
                 }
-                className="text-blue-600 hover:underline flex items-center gap-1"
+                className={`${
+                  viewMode === "list"
+                    ? "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
+                    : "mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 transition-colors w-full"
+                }`}
               >
                 <Edit3 size={16} /> Edit
               </button>
@@ -287,6 +357,19 @@ export default function AdminMoviesPage() {
           </div>
         ))}
       </div>
+
+      {/* Empty State */}
+      {filtered.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+          <div className="text-6xl mb-4">🎬</div>
+          <h3 className="text-xl font-semibold mb-2">No movies found</h3>
+          <p className="text-center max-w-md">
+            {movies.length === 0 
+              ? "Get started by adding your first movie!" 
+              : "Try adjusting your filters to see more results."}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
