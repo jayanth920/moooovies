@@ -41,7 +41,6 @@ export default function MoviesPage() {
       });
       const data = await res.json();
       // store movie IDs in cart for quick lookup
-      console.log("CART: ",data)
       setCart(data.cart?.items?.map((i: any) => i.movieId) || []);
     } catch (err) {
       console.error(err);
