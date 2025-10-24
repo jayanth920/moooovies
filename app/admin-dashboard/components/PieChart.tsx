@@ -29,9 +29,6 @@ export default function PieChart({ data }: PieChartProps) {
 
   const options = {
     responsive: true,
-    animation: {
-      duration: 0 // Disable animations
-    },
     plugins: {
       legend: {
         position: 'bottom' as const,

@@ -19,7 +19,13 @@ export default function AdminMoviesPage() {
   const [sortBy, setSortBy] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [showStats, setShowStats] = useState(true);
+  const [showStats, setShowStats] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('admin-movies-showStats');
+      return saved ? JSON.parse(saved) : true;
+    }
+    return true;
+  });
 
   const fetchMovies = async () => {
     try {
@@ -144,10 +150,14 @@ export default function AdminMoviesPage() {
             <Plus size={18} /> Add Movie
           </button>
           <button
-            onClick={() => setShowStats(!showStats)}
+            onClick={() => {
+              const newValue = !showStats;
+              setShowStats(newValue);
+              localStorage.setItem('admin-movies-showStats', JSON.stringify(newValue));
+            }}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
           >
-            <BarChart3 size={18} /> 
+            <BarChart3 size={18} />
             {showStats ? "Hide Stats" : "Show Stats"}
           </button>
           <button
@@ -179,7 +189,7 @@ export default function AdminMoviesPage() {
       {showStats && <MovieStatsCharts />}
 
       {/* Filters */}
-      <div className="mb-6 flex flex-wrap gap-4 items-center">
+      <div className="mb-6 flex flex-wrap gap-3 items-center">
         <input
           type="text"
           placeholder="Search movies..."
@@ -254,18 +264,16 @@ export default function AdminMoviesPage() {
 
       {/* Movie list/grid */}
       <div
-        className={`${
-          viewMode === "grid"
-            ? "grid grid-cols-2 md:grid-cols-4 gap-6"
-            : "flex flex-col gap-4"
-        }`}
+        className={`${viewMode === "grid"
+          ? "grid grid-cols-2 md:grid-cols-4 gap-6"
+          : "flex flex-col gap-4"
+          }`}
       >
         {filtered.map((movie) => (
           <div
             key={movie._id}
-            className={`bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow ${
-              viewMode === "list" ? "flex items-center p-4" : "flex flex-col"
-            } relative group`}
+            className={`bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow ${viewMode === "list" ? "flex items-center p-4" : "flex flex-col"
+              } relative group`}
           >
             {/* Checkbox - Positioned differently based on view mode */}
             {viewMode === "list" ? (
@@ -292,21 +300,19 @@ export default function AdminMoviesPage() {
                   "https://via.placeholder.com/200x300?text=No+Image"
                 }
                 alt={movie.title}
-                className={`${
-                  viewMode === "list"
-                    ? "w-20 h-28 object-cover rounded-lg"
-                    : "w-full h-auto rounded-t-xl"
-                }`}
+                className={`${viewMode === "list"
+                  ? "w-20 h-28 object-cover rounded-lg"
+                  : "w-full h-auto rounded-t-xl"
+                  }`}
               />
             </div>
 
             {/* Content */}
             <div
-              className={`${
-                viewMode === "list" 
-                  ? "flex-1 flex justify-between items-center ml-4" 
-                  : "p-4 flex-1 flex flex-col"
-              }`}
+              className={`${viewMode === "list"
+                ? "flex-1 flex justify-between items-center ml-4"
+                : "p-4 flex-1 flex flex-col"
+                }`}
             >
               <div className={viewMode === "grid" ? "flex-1" : ""}>
                 <h2 className="font-bold text-lg text-gray-800 mb-1 line-clamp-1">
@@ -339,17 +345,16 @@ export default function AdminMoviesPage() {
                   )}
                 </div>
               </div>
-              
+
               {/* Edit Button */}
               <button
                 onClick={() =>
                   router.push(`/admin-dashboard/movies/${movie._id}`)
                 }
-                className={`${
-                  viewMode === "list"
-                    ? "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
-                    : "mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 transition-colors w-full"
-                }`}
+                className={`${viewMode === "list"
+                  ? "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
+                  : "mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 transition-colors w-full"
+                  }`}
               >
                 <Edit3 size={16} /> Edit
               </button>
@@ -364,8 +369,8 @@ export default function AdminMoviesPage() {
           <div className="text-6xl mb-4">🎬</div>
           <h3 className="text-xl font-semibold mb-2">No movies found</h3>
           <p className="text-center max-w-md">
-            {movies.length === 0 
-              ? "Get started by adding your first movie!" 
+            {movies.length === 0
+              ? "Get started by adding your first movie!"
               : "Try adjusting your filters to see more results."}
           </p>
         </div>

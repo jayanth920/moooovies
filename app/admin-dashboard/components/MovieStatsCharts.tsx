@@ -162,18 +162,22 @@ export default function MovieStatsCharts() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="bg-white p-6 rounded-lg shadow border h-[31rem] w-full">
           <h3 className="text-lg font-semibold mb-4 text-gray-800">
             Most Ordered Movies (Quantity)
           </h3>
-          <BarChart data={stats.movieStats.slice(0, 8)} />
+          <div className="h-80">
+            <BarChart data={stats.movieStats.slice(0, 8)} />
+          </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="bg-white p-6 rounded-lg shadow border w-fit">
           <h3 className="text-lg font-semibold mb-4 text-gray-800">
             Revenue Distribution
           </h3>
-          <MoviePieChart data={stats.movieStats.slice(0, 5)} />
+          <div className="h-96 w-90">
+            <MoviePieChart data={stats.movieStats.slice(0, 5)} />
+          </div>
         </div>
       </div>
     </div>
