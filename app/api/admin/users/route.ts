@@ -7,8 +7,13 @@ import { Order } from "@/app/models/Order";
 export async function GET(req: Request) {
   try {
     const authResult = requireAdmin(req);
-    if (authResult instanceof NextResponse) return authResult;
+    
+    // Check if auth returned an error
+    if (authResult && (authResult as any).error) {
+      return (authResult as any).error;
+    }
 
+    // If we get here, authResult is the user payload
     await dbConnect();
 
     const { searchParams } = new URL(req.url);
@@ -87,7 +92,11 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const authResult = requireAdmin(req);
-    if (authResult instanceof NextResponse) return authResult;
+    
+    // Check if auth returned an error
+    if (authResult && (authResult as any).error) {
+      return (authResult as any).error;
+    }
 
     await dbConnect();
     const data = await req.json();
