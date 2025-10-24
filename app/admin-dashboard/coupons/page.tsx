@@ -60,7 +60,7 @@ export default function AdminCouponsPage() {
             });
 
             const data = await res.json();
-            console.log("coupons", data)
+
 
             if (data.success) {
                 setCoupons(data.coupons || []);

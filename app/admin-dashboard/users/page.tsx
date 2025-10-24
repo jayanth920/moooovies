@@ -60,7 +60,7 @@ export default function AdminUsersPage() {
         cache: 'no-store'
       });
       const data = await res.json();
-      console.log("DATA", data)
+
       if (data.success) {
         setUsers(data.users);
         setFilteredUsers(data.users);

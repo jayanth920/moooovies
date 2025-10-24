@@ -44,13 +44,13 @@ export default function MovieStatsCharts() {
     }
   }, [userLoading, user, token]);
 
-  useEffect(() => {
-    if (stats) {
-      console.log("Stats data received:", stats);
-      console.log("Movie stats array:", stats.movieStats);
-      console.log("Overall stats:", stats.overall);
-    }
-  }, [stats]);
+  // useEffect(() => {
+  //   if (stats) {
+  //     console.log("Stats data received:", stats);
+  //     console.log("Movie stats array:", stats.movieStats);
+  //     console.log("Overall stats:", stats.overall);
+  //   }
+  // }, [stats]);
 
   const fetchStats = async () => {
     setStatsLoading(true);
@@ -72,7 +72,7 @@ export default function MovieStatsCharts() {
       }
 
       const data = await response.json();
-      console.log("STATS DATA", data);
+
       setStats(data);
     } catch (err: any) {
       console.error('Error fetching stats:', err);

@@ -62,8 +62,6 @@ export async function GET(req: Request) {
       },
     ]);
 
-    console.log("Movie stats found:", movieStats.length);
-    console.log("Overall stats:", overallStats[0]);
 
     return NextResponse.json({
       success: true,

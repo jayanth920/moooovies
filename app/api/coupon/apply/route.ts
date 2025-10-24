@@ -32,7 +32,6 @@ export async function GET(req: Request) {
     ],
   });
 
-  console.log("COUPON ", coupon)
 
   if (!coupon) {
     return NextResponse.json({ valid: false, error: "Invalid or expired coupon" }, { status: 404 });
@@ -44,13 +43,11 @@ export async function GET(req: Request) {
     return NextResponse.json({ valid: false, error: "Cart is empty" }, { status: 400 });
   }
 
-    console.log("CART ", cart)
 
   // Fetch latest movie prices
   const movieIds = cart.items.map((i: any) => i.movieId);
   const movies = await Movie.find({ id: { $in: movieIds } }).lean();
 
-    console.log("MOVIES ", movies)
 
   // Compute subtotal and total quantity
   let subtotal = 0;
@@ -67,7 +64,6 @@ export async function GET(req: Request) {
   // Fetch number of previous orders for the user
   const orderCount = await Order.countDocuments({ userId: user.id });
 
-    console.log("ORDER COUNT ", orderCount)
 
   // Validate coupon conditions
   if (coupon.minQuantity && totalQuantity < coupon.minQuantity) {
@@ -97,14 +93,12 @@ export async function GET(req: Request) {
     discountAmount = (subtotal * coupon.price) / 100;
   }
 
-  console.log("Discount Amt", discountAmount)
 
   // Calculate tax and total
   const totalAfterDiscount = subtotal - discountAmount;
   const tax = totalAfterDiscount * TAX_RATE;
   const total = totalAfterDiscount + tax;
 
-  console.log("Total", total)
   
   const obj = {
     valid: true,
@@ -119,7 +113,6 @@ export async function GET(req: Request) {
       orderCount,
     },
   }
-  console.log("OBJ", obj)
 
   return NextResponse.json({
     valid: true,

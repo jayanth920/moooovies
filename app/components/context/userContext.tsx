@@ -56,7 +56,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         });
         if (!res.ok) throw new Error("Failed to fetch user");
         const data = await res.json();
-        console.log(data)
         setUser(data.user);
       } catch (err) {
         console.error(err);

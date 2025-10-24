@@ -83,7 +83,7 @@ export default function UserStatsCharts() {
       }
       
       const data = await response.json();
-      console.log("USER STATS DATA", data);
+
       setStats(data.statistics);
     } catch (err: any) {
       console.error('Error fetching user stats:', err);

@@ -56,13 +56,7 @@ if (couponCode) {
     // Pull user's previous order count
     const orderCount = await Order.countDocuments({ userId: user.id });
 
-    // DEBUG: Log the actual values
-    console.log('Coupon validation:', {
-      couponCode: coupon.code,
-      specificOrderCount: coupon.specificOrderCount,
-      orderCount,
-      comparison: orderCount === coupon.specificOrderCount
-    });
+
 
     // TS-safe validations
     const passesMinQuantity =
@@ -81,17 +75,7 @@ if (couponCode) {
       coupon.specificOrderCount === undefined ||
       orderCount === coupon.specificOrderCount;
 
-    console.log('Validation results:', {
-      passesMinQuantity,
-      passesMinSubtotal,
-      passesMinOrderCount,
-      passesMaxOrderCount,
-      passesSpecificOrderCount,
-      conditions: {
-        hasSpecificOrderCount: coupon.specificOrderCount !== null && coupon.specificOrderCount !== undefined,
-        orderCountMatches: orderCount === coupon.specificOrderCount
-      }
-    });
+
 
     if (
       passesMinQuantity &&
@@ -133,7 +117,6 @@ if (couponCode) {
     },
   };
 
-  console.log("RESULT", res);
 
   return NextResponse.json({
     cart: { items: enrichedItems },

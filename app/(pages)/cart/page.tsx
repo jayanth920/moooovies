@@ -188,7 +188,6 @@ export default function CartPage() {
 
       // Now safely parse the JSON
       const data = await res.json();
-      console.log("DATA", data);
 
       if (data.success) {
         // Open success modal
