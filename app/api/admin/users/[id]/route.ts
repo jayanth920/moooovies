@@ -14,7 +14,9 @@ interface RouteParams {
 export async function GET(req: Request, { params }: RouteParams) {
   try {
     const authResult = requireAdmin(req);
-    if (authResult instanceof NextResponse) return authResult;
+    if (authResult && (authResult as any).error) {
+      return (authResult as any).error;
+    }
 
     await dbConnect();
     const { id } = await params;

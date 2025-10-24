@@ -6,7 +6,9 @@ import { requireAdmin } from "@/app/lib/auth";
 export async function GET(req: Request) {
   try {
     const authResult = requireAdmin(req);
-    if (authResult instanceof NextResponse) return authResult;
+    if (authResult && (authResult as any).error) {
+      return (authResult as any).error;
+    }
 
     await dbConnect();
 
@@ -14,7 +16,7 @@ export async function GET(req: Request) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
     const search = searchParams.get("search") || "";
-    
+
     // Advanced filters
     const minItems = searchParams.get("minItems");
     const maxItems = searchParams.get("maxItems");
@@ -36,34 +38,34 @@ export async function GET(req: Request) {
           from: "users",
           localField: "userId",
           foreignField: "_id",
-          as: "userData"
-        }
+          as: "userData",
+        },
       },
       {
         $unwind: {
           path: "$userData",
-          preserveNullAndEmptyArrays: true
-        }
+          preserveNullAndEmptyArrays: true,
+        },
       },
       // Calculate items and movies counts
       {
         $addFields: {
           totalItems: {
-            $sum: "$movies.quantity"
+            $sum: "$movies.quantity",
           },
           totalMovies: {
-            $size: "$movies"
+            $size: "$movies",
           },
           // Add shortId field for searching
           shortId: {
             $substrCP: [
               { $toString: "$_id" },
               { $subtract: [{ $strLenCP: { $toString: "$_id" } }, 6] },
-              6
-            ]
-          }
-        }
-      }
+              6,
+            ],
+          },
+        },
+      },
     ];
 
     // Build match stage for all filters
@@ -71,12 +73,12 @@ export async function GET(req: Request) {
 
     // Search filter
     if (search) {
-      const cleanSearch = search.replace(/^#/, '');
-      
+      const cleanSearch = search.replace(/^#/, "");
+
       matchStage.$or = [
         { "userData.name": { $regex: search, $options: "i" } },
         { "userData.email": { $regex: search, $options: "i" } },
-        { "shortId": { $regex: cleanSearch, $options: "i" } }
+        { shortId: { $regex: cleanSearch, $options: "i" } },
       ];
     }
 
@@ -141,7 +143,7 @@ export async function GET(req: Request) {
           userId: {
             _id: "$userData._id",
             name: "$userData.name",
-            email: "$userData.email"
+            email: "$userData.email",
           },
           movies: 1,
           subtotal: 1,
@@ -151,8 +153,8 @@ export async function GET(req: Request) {
           couponSnapshot: 1,
           createdAt: 1,
           totalItems: 1,
-          totalMovies: 1
-        }
+          totalMovies: 1,
+        },
       }
     );
 
@@ -166,33 +168,33 @@ export async function GET(req: Request) {
           from: "users",
           localField: "userId",
           foreignField: "_id",
-          as: "userData"
-        }
+          as: "userData",
+        },
       },
       {
         $unwind: {
           path: "$userData",
-          preserveNullAndEmptyArrays: true
-        }
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $addFields: {
           totalItems: {
-            $sum: "$movies.quantity"
+            $sum: "$movies.quantity",
           },
           totalMovies: {
-            $size: "$movies"
+            $size: "$movies",
           },
           // Add shortId field for counting too
           shortId: {
             $substrCP: [
               { $toString: "$_id" },
               { $subtract: [{ $strLenCP: { $toString: "$_id" } }, 6] },
-              6
-            ]
-          }
-        }
-      }
+              6,
+            ],
+          },
+        },
+      },
     ];
 
     // Add the same match stage for counting
@@ -212,10 +214,9 @@ export async function GET(req: Request) {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit)
-      }
+        pages: Math.ceil(total / limit),
+      },
     });
-
   } catch (error) {
     console.error("Error fetching orders:", error);
     return NextResponse.json(

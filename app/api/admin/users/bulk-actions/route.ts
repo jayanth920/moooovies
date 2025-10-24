@@ -6,7 +6,9 @@ import { requireAdmin } from "@/app/lib/auth";
 export async function POST(req: Request) {
   try {
     const authResult = requireAdmin(req);
-    if (authResult instanceof NextResponse) return authResult;
+    if (authResult && (authResult as any).error) {
+      return (authResult as any).error;
+    }
 
     await dbConnect();
     const { action, userIds, data } = await req.json();

@@ -6,7 +6,9 @@ import { requireAdmin } from "@/app/lib/auth";
 export async function POST(req: Request, { params }: any) {
   try {
     const authResult = requireAdmin(req);
-    if (authResult instanceof NextResponse) return authResult;
+    if (authResult && (authResult as any).error) {
+      return (authResult as any).error;
+    }
 
     await dbConnect();
     const { id } = params;
@@ -27,9 +29,8 @@ export async function POST(req: Request, { params }: any) {
     return NextResponse.json({
       success: true,
       message: "User activated successfully",
-      user: activatedUser
+      user: activatedUser,
     });
-
   } catch (error) {
     console.error("Error activating user:", error);
     return NextResponse.json(

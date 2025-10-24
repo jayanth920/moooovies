@@ -6,7 +6,9 @@ import { requireAdmin } from "@/app/lib/auth";
 export async function GET(req: Request) {
   try {
     const authResult = requireAdmin(req);
-    if (authResult instanceof NextResponse) return authResult;
+    if (authResult && (authResult as any).error) {
+      return (authResult as any).error;
+    }
 
     await dbConnect();
 
@@ -16,10 +18,10 @@ export async function GET(req: Request) {
         $group: {
           _id: {
             year: { $year: "$createdAt" },
-            month: { $month: "$createdAt" }
+            month: { $month: "$createdAt" },
           },
-          revenue: { $sum: "$total" }
-        }
+          revenue: { $sum: "$total" },
+        },
       },
       { $sort: { "_id.year": 1, "_id.month": 1 } },
       {
@@ -31,14 +33,14 @@ export async function GET(req: Request) {
                 $dateFromParts: {
                   year: "$_id.year",
                   month: "$_id.month",
-                  day: 1
-                }
-              }
-            }
+                  day: 1,
+                },
+              },
+            },
           },
-          revenue: 1
-        }
-      }
+          revenue: 1,
+        },
+      },
     ]);
 
     // Coupon usage stats
@@ -48,27 +50,26 @@ export async function GET(req: Request) {
         $group: {
           _id: "$couponSnapshot.code",
           count: { $sum: 1 },
-          totalDiscount: { $sum: "$discount" }
-        }
+          totalDiscount: { $sum: "$discount" },
+        },
       },
       { $sort: { count: -1 } },
       {
         $project: {
           code: "$_id",
           count: 1,
-          totalDiscount: 1
-        }
-      }
+          totalDiscount: 1,
+        },
+      },
     ]);
 
     return NextResponse.json({
       success: true,
       stats: {
         monthlyRevenue,
-        couponUsage
-      }
+        couponUsage,
+      },
     });
-
   } catch (error) {
     console.error("Error fetching order stats:", error);
     return NextResponse.json(

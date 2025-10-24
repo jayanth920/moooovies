@@ -15,8 +15,9 @@ interface RouteParams {
 export async function DELETE(req: Request, { params }: RouteParams) {
   try {
     const authResult = requireAdmin(req);
-    if (authResult instanceof NextResponse) return authResult;
-
+    if (authResult && (authResult as any).error) {
+      return (authResult as any).error;
+    }
     await dbConnect();
     const { id } = await params; // Add await here
 
@@ -56,7 +57,8 @@ export async function DELETE(req: Request, { params }: RouteParams) {
 
     return NextResponse.json({
       success: true,
-      message: "User permanently deleted successfully along with all their orders and cart items",
+      message:
+        "User permanently deleted successfully along with all their orders and cart items",
       user: {
         _id: user._id,
         name: user.name,

@@ -7,7 +7,9 @@ import { requireAdmin } from "@/app/lib/auth";
 export async function GET(req: Request) {
   try {
     const authResult = requireAdmin(req);
-    if (authResult instanceof NextResponse) return authResult;
+    if (authResult && (authResult as any).error) {
+      return (authResult as any).error;
+    }
 
     await dbConnect();
 
@@ -18,21 +20,21 @@ export async function GET(req: Request) {
     const userGrowth = await User.aggregate([
       {
         $match: {
-          createdAt: { $gte: twelveMonthsAgo }
-        }
+          createdAt: { $gte: twelveMonthsAgo },
+        },
       },
       {
         $group: {
           _id: {
             year: { $year: "$createdAt" },
-            month: { $month: "$createdAt" }
+            month: { $month: "$createdAt" },
           },
-          count: { $sum: 1 }
-        }
+          count: { $sum: 1 },
+        },
       },
       {
-        $sort: { "_id.year": 1, "_id.month": 1 }
-      }
+        $sort: { "_id.year": 1, "_id.month": 1 },
+      },
     ]);
 
     // Get user role statistics
@@ -40,9 +42,9 @@ export async function GET(req: Request) {
       {
         $group: {
           _id: "$role",
-          count: { $sum: 1 }
-        }
-      }
+          count: { $sum: 1 },
+        },
+      },
     ]);
 
     // Get user status statistics
@@ -50,9 +52,9 @@ export async function GET(req: Request) {
       {
         $group: {
           _id: "$active",
-          count: { $sum: 1 }
-        }
-      }
+          count: { $sum: 1 },
+        },
+      },
     ]);
 
     // Get top users by orders
@@ -61,19 +63,19 @@ export async function GET(req: Request) {
         $group: {
           _id: "$userId",
           totalOrders: { $sum: 1 },
-          totalSpent: { $sum: "$total" }
-        }
+          totalSpent: { $sum: "$total" },
+        },
       },
       {
         $lookup: {
           from: "users",
           localField: "_id",
           foreignField: "_id",
-          as: "user"
-        }
+          as: "user",
+        },
       },
       {
-        $unwind: "$user"
+        $unwind: "$user",
       },
       {
         $project: {
@@ -82,15 +84,15 @@ export async function GET(req: Request) {
           email: "$user.email",
           totalOrders: 1,
           totalSpent: 1,
-          _id: 0
-        }
+          _id: 0,
+        },
       },
       {
-        $sort: { totalOrders: -1 }
+        $sort: { totalOrders: -1 },
       },
       {
-        $limit: 10
-      }
+        $limit: 10,
+      },
     ]);
 
     // Overall statistics
@@ -98,7 +100,6 @@ export async function GET(req: Request) {
     const activeUsers = await User.countDocuments({ active: true });
     const totalAdmins = await User.countDocuments({ role: "admin" });
     const totalOrders = await Order.countDocuments();
-
 
     return NextResponse.json({
       success: true,
@@ -111,11 +112,10 @@ export async function GET(req: Request) {
           totalUsers,
           activeUsers,
           totalAdmins,
-          totalOrders
-        }
-      }
+          totalOrders,
+        },
+      },
     });
-
   } catch (error) {
     console.error("Error fetching user statistics:", error);
     return NextResponse.json(
