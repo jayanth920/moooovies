@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useUser } from '@/app/components/context/userContext';
 import BarChart from './BarChart';
-import PieChart from './PieChart';
+import MoviePieChart from './MoviePieChart';
 
 interface MovieStat {
   movieId: string;
@@ -44,6 +44,14 @@ export default function MovieStatsCharts() {
     }
   }, [userLoading, user, token]);
 
+  useEffect(() => {
+    if (stats) {
+      console.log("Stats data received:", stats);
+      console.log("Movie stats array:", stats.movieStats);
+      console.log("Overall stats:", stats.overall);
+    }
+  }, [stats]);
+
   const fetchStats = async () => {
     setStatsLoading(true);
     setError(null);
@@ -55,14 +63,14 @@ export default function MovieStatsCharts() {
           'Content-Type': 'application/json',
         },
       });
-      
+
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
           throw new Error('Unauthorized access - Admin privileges required');
         }
         throw new Error('Failed to fetch statistics');
       }
-      
+
       const data = await response.json();
       console.log("STATS DATA", data);
       setStats(data);
@@ -77,6 +85,20 @@ export default function MovieStatsCharts() {
   const retryFetch = () => {
     fetchStats();
   };
+
+  // Transform data for PieChart
+  const pieChartData = stats?.movieStats.slice(0, 5).map((item, index) => ({
+    label: item.title,
+    value: item.totalRevenue,
+    color: [
+      'rgba(255, 99, 132, 0.7)',
+      'rgba(54, 162, 235, 0.7)',
+      'rgba(255, 206, 86, 0.7)',
+      'rgba(75, 192, 192, 0.7)',
+      'rgba(153, 102, 255, 0.7)'
+    ][index]
+  }));
+
 
   // Show loading while checking user auth OR fetching stats
   if (userLoading || (user?.role === 'admin' && statsLoading)) {
@@ -146,12 +168,12 @@ export default function MovieStatsCharts() {
           </h3>
           <BarChart data={stats.movieStats.slice(0, 8)} />
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow border">
           <h3 className="text-lg font-semibold mb-4 text-gray-800">
             Revenue Distribution
           </h3>
-          <PieChart data={stats.movieStats.slice(0, 5)} />
+          <MoviePieChart data={stats.movieStats.slice(0, 5)} />
         </div>
       </div>
     </div>

@@ -6,10 +6,10 @@ import { Order } from "@/app/models/Order";
 
 export async function GET(req: Request) {
   try {
-    const authResult = requireAdmin(req);
-    if (authResult && (authResult as any).error) {
-      return (authResult as any).error;
-    }
+const authResult = requireAdmin(req);
+if (authResult && (authResult as any).error) {
+  return (authResult as any).error;
+}
 
     // If we get here, authResult is the user payload
     await dbConnect();
@@ -27,7 +27,7 @@ export async function GET(req: Request) {
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } }
       ];
     }
 
@@ -55,8 +55,8 @@ export async function GET(req: Request) {
           from: "orders", // Make sure this matches your MongoDB collection name
           localField: "_id",
           foreignField: "userId",
-          as: "userOrders",
-        },
+          as: "userOrders"
+        }
       },
       {
         $project: {
@@ -67,16 +67,17 @@ export async function GET(req: Request) {
           createdAt: 1,
           updatedAt: 1,
           orders: "$userOrders", // This will contain the actual orders
-          ordersCount: { $size: "$userOrders" },
-        },
+          ordersCount: { $size: "$userOrders" }
+        }
       },
-      { $sort: sortOptions },
+      { $sort: sortOptions }
     ]);
 
     return NextResponse.json({
       success: true,
-      users,
+      users
     });
+
   } catch (error) {
     console.error("Error fetching users:", error);
     return NextResponse.json(
@@ -89,7 +90,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const authResult = requireAdmin(req);
-
+    
     // Check if auth returned an error
     if (authResult && (authResult as any).error) {
       return (authResult as any).error;
@@ -109,14 +110,13 @@ export async function POST(req: Request) {
 
     // Create new user
     const user = await User.create(data);
-    const userWithoutPassword = await User.findById(user._id).select(
-      "-passwordHash"
-    );
+    const userWithoutPassword = await User.findById(user._id).select("-passwordHash");
 
     return NextResponse.json(
       { success: true, user: userWithoutPassword },
       { status: 201 }
     );
+
   } catch (error) {
     console.error("Error creating user:", error);
     return NextResponse.json(

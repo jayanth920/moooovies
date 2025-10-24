@@ -11,45 +11,43 @@ export async function GET(req: Request) {
       return (authResult as any).error;
     }
 
-    // If we get here, user is authenticated admin
-    const adminUser = authResult;
-    console.log("Fetching statistics for admin user ID:", adminUser.id);
-
     await dbConnect();
 
-    // Get movie order statistics
+    // Get movie order statistics - FIXED VERSION
     const movieStats = await Order.aggregate([
       { $unwind: "$movies" },
       {
         $group: {
-          _id: "$movies.movieId",
+          _id: "$movies.movieSnapshot.id", // Use the numeric ID from movieSnapshot
           totalOrders: { $sum: 1 },
           totalQuantity: { $sum: "$movies.quantity" },
           totalRevenue: {
-            $sum: { $multiply: ["$movies.quantity", "$movies.price"] },
+            $sum: { $multiply: ["$movies.quantity", "$movies.purchasePrice"] }, // Use purchasePrice, not price
           },
         },
       },
       {
         $lookup: {
           from: "movies",
-          localField: "_id",
-          foreignField: "_id",
+          localField: "_id", // This is the numeric ID
+          foreignField: "id", // Match with the numeric 'id' field in Movie model
           as: "movieDetails",
         },
       },
-      { $unwind: "$movieDetails" },
+      { $unwind: { path: "$movieDetails", preserveNullAndEmptyArrays: true } }, // Handle movies that might be deleted
       {
         $project: {
           movieId: "$_id",
-          title: "$movieDetails.title",
+          title: { 
+            $ifNull: ["$movieDetails.title", "Unknown Movie (Deleted)"] 
+          },
           totalOrders: 1,
           totalQuantity: 1,
           totalRevenue: 1,
           _id: 0,
         },
       },
-      { $sort: { totalOrders: -1 } },
+      { $sort: { totalQuantity: -1 } }, // Sort by most purchased
     ]);
 
     // Get overall statistics
@@ -63,6 +61,9 @@ export async function GET(req: Request) {
         },
       },
     ]);
+
+    console.log("Movie stats found:", movieStats.length);
+    console.log("Overall stats:", overallStats[0]);
 
     return NextResponse.json({
       success: true,
