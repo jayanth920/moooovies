@@ -48,8 +48,10 @@ export default function AdminUsersPage() {
 
       const res = await fetch(`/api/admin/users?${params}`, {
         headers: {
+          
           'Authorization': `Bearer ${token}`,
         },
+        cache: 'no-store'
       });
       const data = await res.json();
       console.log("DATA", data)
