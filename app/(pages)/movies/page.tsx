@@ -24,7 +24,7 @@ export default function MoviesPage() {
   const fetchMovies = async () => {
     try {
       const res = await fetch("/api/movies");
-      const data = await res.json();
+      const data = await res.json(); // Failing to execute here
       setMovies(data.movies || []);
       setFiltered(data.movies || []);
     } catch (err) {
