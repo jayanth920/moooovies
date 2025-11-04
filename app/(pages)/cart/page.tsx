@@ -3,16 +3,17 @@
 import { useEffect, useState } from "react";
 
 type MovieItem = {
-  movieId: number;
+  movieId: string; 
   quantity: number;
   movie: {
-    id: number;
+    _id: string; 
     title: string;
     coverImage: string;
     price: number;
     discountPrice: number | null;
   };
 };
+
 
 type CartTotals = {
   subtotal: number;
@@ -27,7 +28,7 @@ export default function CartPage() {
   const [cartItems, setCartItems] = useState<MovieItem[]>([]);
   const [totals, setTotals] = useState<CartTotals | null>(null);
   const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState<number | null>(null);
+  const [updating, setUpdating] = useState<string | null>(null); 
   const [couponCode, setCouponCode] = useState("");
   const [couponStatus, setCouponStatus] = useState<"valid" | "invalid" | "checking" | null>(null);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
@@ -42,6 +43,9 @@ export default function CartPage() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
+
+            // console.log("Cart data:", data); // Debug log
+
 
       setCartItems(data.cart?.items || []);
       if (data.totals) {
@@ -68,7 +72,7 @@ export default function CartPage() {
   }, []);
 
   // ---------------- Quantity Updates ----------------
-  const updateQuantity = async (movieId: number, quantity: number) => {
+  const updateQuantity = async (movieId: string, quantity: number) => {
     if (quantity < 1) return;
     setUpdating(movieId);
     try {
@@ -88,7 +92,7 @@ export default function CartPage() {
     }
   };
 
-  const removeItem = async (movieId: number) => {
+  const removeItem = async (movieId: string) => {
     setUpdating(movieId);
     try {
       await fetch("/api/cart", {

@@ -12,7 +12,8 @@
     "movies-seed": "tsx scripts/seedMovies.ts",
     "coupons-seed": "tsx scripts/seedCoupons.ts",
     "rmcarts": "tsx scripts/rmcarts.ts",
-    "rmorders": "tsx scripts/rmorders.ts"
+    "rmorders": "tsx scripts/rmorders.ts",
+    "addids": "tsx scripts/addidorders.ts"
   },
   "dependencies": {
     "@radix-ui/themes": "^3.2.1",

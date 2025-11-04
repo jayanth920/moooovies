@@ -10,7 +10,7 @@ export default function MoviesPage() {
   const [movies, setMovies] = useState<any[]>([]);
   const [filtered, setFiltered] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cart, setCart] = useState<number[]>([]); // movie IDs in cart
+  const [cart, setCart] = useState<string[]>([]);
 
   // Filters
   const [search, setSearch] = useState("");
@@ -40,7 +40,8 @@ export default function MoviesPage() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
-      // store movie IDs in cart for quick lookup
+      console.log("CART DATA", data)
+      // Use movieId which should be the _id
       setCart(data.cart?.items?.map((i: any) => i.movieId) || []);
     } catch (err) {
       console.error(err);
@@ -84,9 +85,9 @@ export default function MoviesPage() {
     }
   };
 
-  const addToCart = async (movieId: number) => {
+  const addToCart = async (movieId: string) => {
     try {
-      await fetch("/api/cart", {
+      const response = await fetch("/api/cart", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -94,13 +95,22 @@ export default function MoviesPage() {
         },
         body: JSON.stringify({ movieId, quantity: 1 }),
       });
+
+      if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Cart API Error:", errorText);
+      throw new Error(`Failed to add to cart: ${response.status}`);
+    }
+
+      const data = await response.json()
+      console.log("CART ADD", data)
       // update cart state locally
       setCart((prev) => [...prev, movieId]);
     } catch (err) {
       console.error(err);
     }
   };
-
+  
   if (loading) return <div className="flex justify-center items-center h-[70vh]">Loading movies...</div>;
 
   const allGenres = Array.from(new Set(movies.flatMap((m) => m.genre)));
@@ -137,7 +147,7 @@ export default function MoviesPage() {
       {/* Movies Flex Container */}
       <div className="flex flex-wrap justify-center gap-6">
         {filtered.length === 0 ? <p>No movies found.</p> : filtered.map((movie) => {
-          const isInCart = cart.includes(movie.id);
+          const isInCart = cart.includes(movie._id);
           return (
             <div key={movie._id} className="bg-white rounded-xl shadow hover:shadow-lg transition relative flex flex-col w-[220px]">
               {movie.comingSoon && <span className="absolute top-2 left-2 bg-yellow-400 text-black px-2 py-1 rounded text-xs font-semibold">Coming Soon</span>}
@@ -157,7 +167,7 @@ export default function MoviesPage() {
                 <div className="flex gap-2 mt-4">
                   <button
                     disabled={isInCart || movie.quantity === 0}
-                    onClick={() => addToCart(movie.id)}
+                    onClick={() => addToCart(movie._id)}
                     className={`flex-1 py-1.5 text-sm rounded-lg ${isInCart ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}
                   >
                     {isInCart ? "Added" : "Add to Cart"}

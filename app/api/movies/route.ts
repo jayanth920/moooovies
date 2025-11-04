@@ -53,6 +53,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   await dbConnect();
   const data = await req.json();
+  // console.log(data)
 
   try {
     // Helper function to upsert a single movie

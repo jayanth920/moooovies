@@ -2,7 +2,7 @@ import pkg from "mongoose";
 const { Schema, model, models } = pkg;
 
 const CartItemSchema = new Schema({
-  movieId: { type: Number, required: true }, // corresponds to movie.id
+  movieId: { type: String, required: true }, // CHANGED TO String
   quantity: { type: Number, default: 1 },
 });
 

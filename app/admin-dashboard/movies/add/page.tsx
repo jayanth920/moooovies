@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
 
 const genreOptions = [
-  "Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", 
+  "Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary",
   "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Thriller"
 ];
 
 const languageOptions = [
-  "English", "Hindi", "Spanish", "French", "German", "Japanese", 
+  "English", "Hindi", "Spanish", "French", "German", "Japanese",
   "Korean", "Chinese", "Italian", "Portuguese", "Russian"
 ];
 
@@ -20,7 +20,6 @@ export default function AddMoviePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    id: "",
     title: "",
     overview: "",
     description: "",
@@ -70,12 +69,21 @@ export default function AddMoviePage() {
 
     try {
       const movieData = {
-        ...formData,
-        id: formData.id ? parseInt(formData.id) : undefined,
+        title: formData.title,
+        overview: formData.overview,
+        description: formData.description,
+        director: formData.director,
+        screenplay: formData.screenplay,
+        pgAge: formData.pgAge,
+        genre: formData.genre,
+        releaseYear: parseInt(formData.releaseYear.toString()),
         price: parseFloat(formData.price),
         discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : null,
         quantity: parseInt(formData.quantity),
-        releaseYear: parseInt(formData.releaseYear.toString()),
+        coverImage: formData.coverImage,
+        featured: formData.featured,
+        comingSoon: formData.comingSoon,
+        languages: formData.languages,
         rating: {
           average: 0,
           count: 0
@@ -123,7 +131,7 @@ export default function AddMoviePage() {
           {/* Basic Information */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold border-b pb-2">Basic Information</h2>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Title *
@@ -182,7 +190,7 @@ export default function AddMoviePage() {
           {/* Details */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold border-b pb-2">Details</h2>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
