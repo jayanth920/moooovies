@@ -40,7 +40,7 @@ export default function MoviesPage() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
-      console.log("CART DATA", data)
+      // console.log("CART DATA", data)
       // Use movieId which should be the _id
       setCart(data.cart?.items?.map((i: any) => i.movieId) || []);
     } catch (err) {
@@ -103,7 +103,7 @@ export default function MoviesPage() {
     }
 
       const data = await response.json()
-      console.log("CART ADD", data)
+      // console.log("CART ADD", data)
       // update cart state locally
       setCart((prev) => [...prev, movieId]);
     } catch (err) {
