@@ -29,7 +29,7 @@ export default function AuthPage() {
 
   const handleAuth = async () => {
     setLoading(true);
-    setError(""); // Clear previous errors
+    setError(""); // Clear previous error
 
     try {
       const endpoint = isSignup ? "/api/users/register" : "/api/users/login";
