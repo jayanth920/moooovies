@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
-import { useRouter } from "next/navigation"; // 👈 add this
+import { useRouter } from "next/navigation";
 import MovieSkeleton from "@/app/components/context/MovieSkeleton";
 
 export default function MoviesPage() {
@@ -24,7 +24,7 @@ export default function MoviesPage() {
   const fetchMovies = async () => {
     try {
       const res = await fetch("/api/movies");
-      const data = await res.json(); // Failing to execute here
+      const data = await res.json();
       setMovies(data.movies || []);
       setFiltered(data.movies || []);
     } catch (err) {
@@ -40,8 +40,6 @@ export default function MoviesPage() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
-      // console.log("CART DATA", data)
-      // Use movieId which should be the _id
       setCart(data.cart?.items?.map((i: any) => i.movieId) || []);
     } catch (err) {
       console.error(err);
@@ -60,9 +58,9 @@ export default function MoviesPage() {
       temp = temp.filter((m) =>
         m.title.toLowerCase().includes(search.toLowerCase())
       );
-    if (genreFilter) temp = temp.filter((m) => m.genre.includes(genreFilter));
+    if (genreFilter) temp = temp.filter((m) => (m.genre || []).includes(genreFilter));
     if (languageFilter)
-      temp = temp.filter((m) => m.languages?.includes(languageFilter));
+      temp = temp.filter((m) => (m.languages || []).includes(languageFilter));
     if (availabilityOnly) temp = temp.filter((m) => m.quantity > 0);
     if (comingSoonOnly) temp = temp.filter((m) => m.comingSoon);
     if (discountOnly) temp = temp.filter((m) => m.discountPrice != null);
@@ -132,27 +130,19 @@ export default function MoviesPage() {
       });
 
       if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Cart API Error:", errorText);
-      throw new Error(`Failed to add to cart: ${response.status}`);
-    }
+        const errorText = await response.text();
+        console.error("Cart API Error:", errorText);
+        throw new Error(`Failed to add to cart: ${response.status}`);
+      }
 
-      const data = await response.json()
-      // console.log("CART ADD", data)
-      // update cart state locally
+      await response.json();
       setCart((prev) => [...prev, movieId]);
     } catch (err) {
       console.error(err);
     }
   };
-<<<<<<< HEAD
- 
-=======
-  
-  if (loading) return <div className="flex justify-center items-center h-[70vh]">Loading movies...</div>;
->>>>>>> 1f46fa35d301a9330efbd3ab1904a379950b65d0
 
-  const allGenres = Array.from(new Set(movies.flatMap((m) => m.genre)));
+  const allGenres = Array.from(new Set(movies.flatMap((m) => m.genre || [])));
   const allLanguages = Array.from(
     new Set(movies.flatMap((m) => m.languages || []))
   );
@@ -232,31 +222,29 @@ export default function MoviesPage() {
         </select>
       </div>
 
-  
+      
+      {loading ? (
+        <div
+          className={`flex flex-wrap justify-center gap-6 transition-opacity duration-300 ${
+            loading ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          {Array.from({ length: 8 }).map((_, i) => (
+            <MovieSkeleton key={i} />
+          ))}
+        </div>
+      ) : null}
 
-  {/* Skeleton Loader */}
-  {loading ? (
-    <div
-      className={`flex flex-wrap justify-center gap-6 transition-opacity duration-300 ${
-        loading ? "opacity-100" : "opacity-0"
-      }`}
-    >
-      {Array.from({ length: 8 }).map((_, i) => (
-        <MovieSkeleton key={i} />
-      ))}
-    </div>
-  ) : null}
       <div className="flex flex-wrap justify-center gap-6">
-<<<<<<< HEAD
-        {/* Movies Flex Container */}
         {filtered.length === 0 ? (
           <p>No movies found.</p>
         ) : (
           filtered.map((movie) => {
-            const isInCart = cart.includes(movie.id);
+            const id = movie._id || movie.id;
+            const isInCart = cart.includes(id);
             return (
               <div
-                key={movie._id}
+                key={id}
                 className="bg-white rounded-xl shadow hover:shadow-lg transition relative flex flex-col w-[220px]"
               >
                 {movie.comingSoon && (
@@ -274,31 +262,6 @@ export default function MoviesPage() {
                     className={`absolute top-2 right-2 px-2 py-1 rounded text-xs font-semibold ${pgBadgeColor(
                       movie.pgAge
                     )}`}
-=======
-        {filtered.length === 0 ? <p>No movies found.</p> : filtered.map((movie) => {
-          const isInCart = cart.includes(movie._id);
-          return (
-            <div key={movie._id} className="bg-white rounded-xl shadow hover:shadow-lg transition relative flex flex-col w-[220px]">
-              {movie.comingSoon && <span className="absolute top-2 left-2 bg-yellow-400 text-black px-2 py-1 rounded text-xs font-semibold">Coming Soon</span>}
-              {movie.quantity === 0 && !movie.comingSoon && <span className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold">Sold Out</span>}
-              {movie.pgAge && <span className={`absolute top-2 right-2 px-2 py-1 rounded text-xs font-semibold ${pgBadgeColor(movie.pgAge)}`}>{movie.pgAge}</span>}
-              <img src={movie.coverImage || "https://via.placeholder.com/300x450?text=No+Image"} alt={movie.title} className="w-full h-auto rounded-t-xl" />
-              <div className="p-4 flex flex-col justify-between h-full">
-                <div>
-                  <h2 className="text-lg font-semibold">{movie.title}</h2>
-                  <p className="text-sm text-gray-600 line-clamp-2 mt-1">{movie.overview}</p>
-                  <p className="font-semibold mt-2">{movie.discountPrice ? <>
-                    <span className="line-through text-gray-400">${movie.price}</span>{" "}
-                    <span className="text-green-600">${movie.discountPrice}</span>
-                  </> : `$${movie.price}`}</p>
-                  <p className="flex items-center text-sm text-gray-700 mt-1"><Star size={16} className="text-yellow-500 mr-1" />{movie.rating.average.toFixed(1)}</p>
-                </div>
-                <div className="flex gap-2 mt-4">
-                  <button
-                    disabled={isInCart || movie.quantity === 0}
-                    onClick={() => addToCart(movie._id)}
-                    className={`flex-1 py-1.5 text-sm rounded-lg ${isInCart ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}
->>>>>>> 1f46fa35d301a9330efbd3ab1904a379950b65d0
                   >
                     {movie.pgAge}
                   </span>
@@ -333,13 +296,13 @@ export default function MoviesPage() {
                     </p>
                     <p className="flex items-center text-sm text-gray-700 mt-1">
                       <Star size={16} className="text-yellow-500 mr-1" />
-                      {movie.rating.average.toFixed(1)}
+                      {movie.rating?.average?.toFixed(1) ?? "N/A"}
                     </p>
                   </div>
                   <div className="flex gap-2 mt-4">
                     <button
                       disabled={isInCart || movie.quantity === 0}
-                      onClick={() => addToCart(movie.id)}
+                      onClick={() => addToCart(id)}
                       className={`flex-1 py-1.5 text-sm rounded-lg ${
                         isInCart
                           ? "bg-gray-400 cursor-not-allowed"
@@ -349,7 +312,7 @@ export default function MoviesPage() {
                       {isInCart ? "Added" : "Add to Cart"}
                     </button>
                     <button
-                      onClick={() => router.push(`/movies/${movie._id}`)}
+                      onClick={() => router.push(`/movies/${id}`)}
                       className="flex-1 border border-gray-300 py-1.5 text-sm rounded-lg hover:bg-gray-100"
                     >
                       Explore
