@@ -151,7 +151,7 @@ export default function MoviesPage() {
     <div className="p-8">
       <h1 className="text-3xl font-bold mb-6">Movies 🎬</h1>
 
-      {/* Filters */}
+      {/* Filter*/}
       <div className="mb-6 flex flex-wrap gap-4 items-center">
         <input
           type="text"
