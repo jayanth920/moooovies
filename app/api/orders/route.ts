@@ -22,7 +22,6 @@ export async function GET(req: Request) {
   return NextResponse.json(orders);
 }
 
-
 // 🟢 POST – Create Order (LOGGED-IN USER OR ADMIN)
 const TAX_RATE = 0.08; // 8%
 
@@ -42,16 +41,35 @@ export async function POST(req: Request) {
     }
 
     const data = await req.json(); 
-    const couponCode = data.coupon?.toUpperCase(); // optional, from frontend
+    const couponCode = data.coupon?.toUpperCase();
 
-    // Fetch latest movie data to capture current state
+    // Fetch latest movie data - HANDLE BOTH NUMERIC ID AND OBJECTID
     const movieIds = cart.items.map((i: any) => i.movieId);
-    const movies = await Movie.find({ id: { $in: movieIds } }).lean();
+    
+    // Try to find movies by _id first (for new carts), then by numeric id (for old carts)
+    let movies = await Movie.find({ _id: { $in: movieIds } }).lean();
+    
+    // If some movies weren't found by _id, try finding them by numeric id
+    const foundMovieIds = movies.map((m: any) => m._id.toString());
+    const missingMovieIds = movieIds.filter((id: string) => !foundMovieIds.includes(id));
+    
+    if (missingMovieIds.length > 0) {
+      // Try to find by numeric id for backward compatibility
+      const additionalMovies = await Movie.find({ id: { $in: missingMovieIds } }).lean();
+      movies = [...movies, ...additionalMovies];
+    }
 
     // Build order items with complete movie snapshot
     let subtotal = 0;
     const orderMovies = cart.items.map((item: any) => {
-      const movie = movies.find((m: any) => Number(m.id) === Number(item.movieId));
+      // Try to find movie by _id first, then by numeric id
+      let movie = movies.find((m: any) => m._id.toString() === item.movieId);
+      
+      if (!movie) {
+        // If not found by _id, try by numeric id (for backward compatibility)
+        movie = movies.find((m: any) => m.id && m.id.toString() === item.movieId);
+      }
+      
       if (!movie) {
         throw new Error(`Movie with ID ${item.movieId} not found`);
       }
@@ -59,23 +77,24 @@ export async function POST(req: Request) {
       const price = movie.discountPrice ?? movie.price ?? 0;
       subtotal += price * item.quantity;
 
-      // Store complete movie snapshot for historical accuracy
+      // Store complete movie snapshot for historical accuracy - INCLUDE BOTH IDS
       return {
         movieSnapshot: {
-          id: movie.id,
+          id: movie.id, // Keep numeric id for old orders
+          _id: movie._id, // Add _id for new orders
           title: movie.title,
           coverImage: movie.coverImage,
-          price: movie.price, // Original price
-          discountPrice: movie.discountPrice, // Discount price at time of purchase
-          description: movie.description, // If you have this
-          genre: movie.genre, // If you have this
+          price: movie.price,
+          discountPrice: movie.discountPrice,
+          description: movie.description,
+          genre: movie.genre,
         },
         quantity: item.quantity,
-        purchasePrice: price, // The actual price paid (discountPrice or regular price)
+        purchasePrice: price,
       };
     });
 
-    // Validate and apply coupon if provided - and snapshot coupon data
+    // Validate and apply coupon if provided
     let discount = 0;
     let couponSnapshot = null;
 
@@ -87,7 +106,6 @@ export async function POST(req: Request) {
       });
 
       if (coupon) {
-        // Validate cart conditions
         const totalQuantity = cart.items.reduce((sum: number, i: any) => sum + i.quantity, 0);
         if ((coupon.minQuantity && totalQuantity < coupon.minQuantity) ||
             (coupon.minSubtotal && subtotal < coupon.minSubtotal)) {
@@ -96,13 +114,12 @@ export async function POST(req: Request) {
 
         discount = coupon.isPercentage ? (subtotal * coupon.price) / 100 : coupon.price;
         
-        // Store complete coupon snapshot for historical accuracy
         couponSnapshot = {
           code: coupon.code,
           description: coupon.description,
-          discountAmount: discount, // The actual discount applied
+          discountAmount: discount,
           isPercentage: coupon.isPercentage,
-          originalDiscountValue: coupon.price, // The coupon's original discount value
+          originalDiscountValue: coupon.price,
           minQuantity: coupon.minQuantity,
           minSubtotal: coupon.minSubtotal,
           minOrderCount: coupon.minOrderCount,
@@ -125,7 +142,7 @@ export async function POST(req: Request) {
       tax,
       discount,
       total,
-      couponSnapshot, // Store the snapshot instead of reference
+      couponSnapshot,
     });
 
     // Clear the cart after order is placed
@@ -140,7 +157,6 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error creating order:", error);
     
-    // Return proper JSON response even for errors
     if (error instanceof Error) {
       return NextResponse.json({ 
         success: false, 

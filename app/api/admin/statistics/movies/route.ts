@@ -13,41 +13,51 @@ export async function GET(req: Request) {
 
     await dbConnect();
 
-    // Get movie order statistics - FIXED VERSION
+    // Updated movie stats API - handles both id and _id
     const movieStats = await Order.aggregate([
       { $unwind: "$movies" },
       {
         $group: {
-          _id: "$movies.movieSnapshot.id", // Use the numeric ID from movieSnapshot
+          // Use _id if available, otherwise fall back to id
+          _id: {
+            $cond: {
+              if: { $ifNull: ["$movies.movieSnapshot._id", false] },
+              then: "$movies.movieSnapshot._id",
+              else: "$movies.movieSnapshot.id",
+            },
+          },
+          title: { $first: "$movies.movieSnapshot.title" },
+          coverImage: { $first: "$movies.movieSnapshot.coverImage" },
           totalOrders: { $sum: 1 },
           totalQuantity: { $sum: "$movies.quantity" },
           totalRevenue: {
-            $sum: { $multiply: ["$movies.quantity", "$movies.purchasePrice"] }, // Use purchasePrice, not price
+            $sum: { $multiply: ["$movies.quantity", "$movies.purchasePrice"] },
+          },
+          // Track which ID type we're using
+          idType: {
+            $first: {
+              $cond: {
+                if: { $ifNull: ["$movies.movieSnapshot._id", false] },
+                then: "_id",
+                else: "id",
+              },
+            },
           },
         },
       },
-      {
-        $lookup: {
-          from: "movies",
-          localField: "_id", // This is the numeric ID
-          foreignField: "id", // Match with the numeric 'id' field in Movie model
-          as: "movieDetails",
-        },
-      },
-      { $unwind: { path: "$movieDetails", preserveNullAndEmptyArrays: true } }, // Handle movies that might be deleted
       {
         $project: {
           movieId: "$_id",
-          title: { 
-            $ifNull: ["$movieDetails.title", "Unknown Movie (Deleted)"] 
-          },
+          title: 1,
+          coverImage: 1,
           totalOrders: 1,
           totalQuantity: 1,
           totalRevenue: 1,
+          idType: 1, // Useful for debugging
           _id: 0,
         },
       },
-      { $sort: { totalQuantity: -1 } }, // Sort by most purchased
+      { $sort: { totalQuantity: -1 } },
     ]);
 
     // Get overall statistics
@@ -61,7 +71,6 @@ export async function GET(req: Request) {
         },
       },
     ]);
-
 
     return NextResponse.json({
       success: true,

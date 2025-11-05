@@ -6,7 +6,8 @@ const OrderSchema = new Schema({
   movies: [
     {
       movieSnapshot: {
-        id: { type: Number, required: true },
+        id: { type: Number },
+        _id: { type: Schema.Types.ObjectId },
         title: { type: String, required: true },
         coverImage: { type: String, required: true },
         price: { type: Number, required: true }, // Original price

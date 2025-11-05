@@ -24,15 +24,16 @@ export async function GET(req: Request) {
     return NextResponse.json({ cart: { items: [] }, totals: null });
 
   const movieIds = cart.items.map((i: any) => i.movieId);
-  const movies = await Movie.find({ id: { $in: movieIds } }).lean();
+  
+  // Changed: Find movies by _id instead of numeric id
+  const movies = await Movie.find({ _id: { $in: movieIds } }).lean();
 
   let subtotal = 0;
   let totalQuantity = 0;
 
   const enrichedItems = cart.items.map((item: any) => {
-    const movie = movies.find(
-      (m: any) => Number(m.id) === Number(item.movieId)
-    );
+    // Changed: Find movie by _id (ObjectId)
+    const movie = movies.find((m: any) => String(m._id) === String(item.movieId));
     const price = movie?.discountPrice ?? movie?.price ?? 0;
     subtotal += price * item.quantity;
     totalQuantity += item.quantity;
@@ -42,81 +43,60 @@ export async function GET(req: Request) {
   let discountAmount = 0;
   let appliedCoupon = null;
 
-if (couponCode) {
-  const coupon = await Coupon.findOne({
-    code: couponCode,
-    active: true,
-    $or: [
-      { expiresAt: { $exists: false } },
-      { expiresAt: { $gte: new Date() } },
-    ],
-  });
+  if (couponCode) {
+    const coupon = await Coupon.findOne({
+      code: couponCode,
+      active: true,
+      $or: [
+        { expiresAt: { $exists: false } },
+        { expiresAt: { $gte: new Date() } },
+      ],
+    });
 
-  if (coupon) {
-    // Pull user's previous order count
-    const orderCount = await Order.countDocuments({ userId: user.id });
+    if (coupon) {
+      const orderCount = await Order.countDocuments({ userId: user.id });
 
+      const passesMinQuantity =
+        coupon.minQuantity == null || totalQuantity >= coupon.minQuantity;
+      const passesMinSubtotal =
+        coupon.minSubtotal == null || subtotal >= coupon.minSubtotal;
+      const passesMinOrderCount =
+        coupon.minOrderCount == null || orderCount >= coupon.minOrderCount;
+      const passesMaxOrderCount =
+        coupon.maxOrderCount == null || orderCount <= coupon.maxOrderCount;
+      
+      const passesSpecificOrderCount =
+        coupon.specificOrderCount === null ||
+        coupon.specificOrderCount === undefined ||
+        orderCount === coupon.specificOrderCount;
 
+      if (
+        passesMinQuantity &&
+        passesMinSubtotal &&
+        passesMinOrderCount &&
+        passesMaxOrderCount &&
+        passesSpecificOrderCount
+      ) {
+        discountAmount = coupon.isPercentage
+          ? (subtotal * coupon.price) / 100
+          : coupon.price;
 
-    // TS-safe validations
-    const passesMinQuantity =
-      coupon.minQuantity == null || totalQuantity >= coupon.minQuantity;
-    const passesMinSubtotal =
-      coupon.minSubtotal == null || subtotal >= coupon.minSubtotal;
-    const passesMinOrderCount =
-      coupon.minOrderCount == null || orderCount >= coupon.minOrderCount;
-    const passesMaxOrderCount =
-      coupon.maxOrderCount == null || orderCount <= coupon.maxOrderCount;
-    
-    // FIXED: Handle specificOrderCount properly
-    // For WELCOME15: specificOrderCount = 0, so it should ONLY pass if orderCount === 0
-    const passesSpecificOrderCount =
-      coupon.specificOrderCount === null ||
-      coupon.specificOrderCount === undefined ||
-      orderCount === coupon.specificOrderCount;
+        discountAmount = Math.min(discountAmount, subtotal);
 
-
-
-    if (
-      passesMinQuantity &&
-      passesMinSubtotal &&
-      passesMinOrderCount &&
-      passesMaxOrderCount &&
-      passesSpecificOrderCount
-    ) {
-      discountAmount = coupon.isPercentage
-        ? (subtotal * coupon.price) / 100
-        : coupon.price;
-
-      // Ensure discount doesn't exceed subtotal
-      discountAmount = Math.min(discountAmount, subtotal);
-
-      appliedCoupon = {
-        code: coupon.code,
-        description: coupon.description,
-        discountAmount,
-      };
-    } else {
-      console.log('Coupon validation failed for:', coupon.code);
+        appliedCoupon = {
+          code: coupon.code,
+          description: coupon.description,
+          discountAmount,
+        };
+      } else {
+        console.log('Coupon validation failed for:', coupon.code);
+      }
     }
   }
-}
+
   const totalAfterDiscount = subtotal - discountAmount;
   const tax = totalAfterDiscount * TAX_RATE;
   const total = totalAfterDiscount + tax;
-
-  const res = {
-    cart: { items: enrichedItems },
-    totals: {
-      subtotal,
-      discountAmount,
-      tax,
-      total,
-      appliedCoupon,
-      totalQuantity,
-    },
-  };
-
 
   return NextResponse.json({
     cart: { items: enrichedItems },

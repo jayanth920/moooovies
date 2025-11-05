@@ -1,6 +1,5 @@
 export const movies = [
   {
-    id: 1,
     title: "Inception",
     overview: "A thief who steals corporate secrets through dream-sharing technology.",
     description: "A detailed exploration of dreams within dreams, starring Leonardo DiCaprio.",
@@ -20,7 +19,6 @@ export const movies = [
     languages: ["English", "French", "Japanese"],
   },
   {
-    id: 2,
     title: "Interstellar",
     overview: "A journey through space and time to save humanity’s future.",
     description: "Starring Matthew McConaughey, exploring love, time, and space.",
@@ -40,7 +38,6 @@ export const movies = [
     languages: ["English"],
   },
   {
-    id: 3,
     title: "The Dark Knight",
     overview: "Batman faces his greatest enemy — the Joker — in a battle for Gotham’s soul.",
     description: "Heath Ledger delivers a legendary performance as the Joker.",
@@ -60,7 +57,6 @@ export const movies = [
     languages: ["English"],
   },
   {
-    id: 4,
     title: "Avengers: Endgame",
     overview: "The Avengers unite for one final stand against Thanos.",
     description: "Epic conclusion to the Infinity Saga with all Marvel heroes together.",
@@ -80,7 +76,6 @@ export const movies = [
     languages: ["English", "Hindi"],
   },
   {
-    id: 5,
     title: "The Matrix",
     overview: "A hacker discovers reality is a simulation controlled by machines.",
     description: "Keanu Reeves stars in this revolutionary sci-fi action film.",
@@ -100,7 +95,6 @@ export const movies = [
     languages: ["English"],
   },
   {
-    id: 6,
     title: "Dune: Part Two",
     overview: "Paul Atreides unites the Fremen to wage war against House Harkonnen.",
     description: "Epic continuation of Denis Villeneuve’s adaptation of Dune.",

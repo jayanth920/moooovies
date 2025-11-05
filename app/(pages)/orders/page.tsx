@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 
 type MovieItem = {
   movieSnapshot: {
-    id: number;
+    id?: number;
+    _id?: string; 
     title: string;
     coverImage: string;
     price: number;
     discountPrice: number | null;
     description?: string;
-    genre?: string[]; // Changed to array
+    genre?: string[];
   };
   quantity: number;
   purchasePrice: number;
@@ -44,6 +45,7 @@ export default function OrdersPage() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
+      console.log("Orders data:", data); // Debug log
       setOrders(data || []);
     } catch (err) {
       console.error(err);
@@ -55,6 +57,12 @@ export default function OrdersPage() {
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  // Helper function to get unique key for each movie item
+  const getMovieKey = (movieSnapshot: any, index: number) => {
+    // Use _id if available, otherwise use id, otherwise use index
+    return movieSnapshot._id || movieSnapshot.id || index;
+  };
 
   if (loading) return <p className="p-8">Loading orders...</p>;
   if (!orders.length) return <p className="p-8">You have no past orders.</p>;
@@ -75,7 +83,7 @@ export default function OrdersPage() {
             {/* Movies List */}
             <div className="flex flex-col gap-2 mb-4">
               {order.movies.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-4">
+                <div key={getMovieKey(item.movieSnapshot, idx)} className="flex items-center gap-4">
                   <img 
                     src={item.movieSnapshot.coverImage} 
                     alt={item.movieSnapshot.title} 
@@ -92,6 +100,10 @@ export default function OrdersPage() {
                         Original: ${item.movieSnapshot.price.toFixed(2)}
                       </p>
                     )}
+                    {/* Debug info - remove in production */}
+                    <p className="text-xs text-gray-400">
+                      ID: {item.movieSnapshot._id || item.movieSnapshot.id || 'No ID'}
+                    </p>
                   </div>
                   <div className="font-semibold">
                     ${(item.purchasePrice * item.quantity).toFixed(2)}

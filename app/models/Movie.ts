@@ -3,7 +3,7 @@ const { Schema, model, models } = pkg;
 
 const MovieSchema = new Schema(
   {
-    id: { type: Number, unique: true }, // manually assigned ID
+    // id: { type: Number, unique: true },
     title: { type: String, required: true },
 
     overview: { type: String },           // main description shown in list page

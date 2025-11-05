@@ -72,6 +72,7 @@ export default function MovieStatsCharts() {
       }
 
       const data = await response.json();
+      console.log("DATA",data)
 
       setStats(data);
     } catch (err: any) {

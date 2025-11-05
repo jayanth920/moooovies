@@ -8,7 +8,7 @@ export default function MovieDetailPage() {
     const { id } = useParams();
     const [movie, setMovie] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [cart, setCart] = useState<number[]>([]);
+    const [cart, setCart] = useState<string[]>([]);
     const [adding, setAdding] = useState(false);
 
     // Fetch single movie
@@ -38,7 +38,7 @@ export default function MovieDetailPage() {
     };
 
     // Add to Cart
-    const addToCart = async (movieId: number) => {
+    const addToCart = async (movieId: string) => {
         try {
             setAdding(true);
             await fetch("/api/cart", {
@@ -65,7 +65,7 @@ export default function MovieDetailPage() {
     if (loading) return <div className="flex justify-center items-center h-[70vh]">Loading movie...</div>;
     if (!movie) return <div className="text-center text-gray-600 mt-10">Movie not found.</div>;
 
-    const isInCart = cart.includes(movie.id);
+    const isInCart = cart.includes(movie._id);
 
     return (
         <div className="max-w-4xl mx-auto p-8">
@@ -109,7 +109,7 @@ export default function MovieDetailPage() {
 
                     <button
                         disabled={isInCart || adding || movie.quantity === 0}
-                        onClick={() => addToCart(movie.id)}
+                        onClick={() => addToCart(movie._id)}
                         className={`mt-6 px-6 py-2 rounded-lg text-white font-semibold ${isInCart
                                 ? "bg-gray-400 cursor-not-allowed"
                                 : "bg-blue-600 hover:bg-blue-700"

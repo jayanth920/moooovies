@@ -113,7 +113,6 @@ export default function MovieEditPage() {
     try {
       const movieData = {
         ...formData,
-        id: formData.id ? parseInt(formData.id) : undefined,
         price: parseFloat(formData.price),
         discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : null,
         quantity: parseInt(formData.quantity),
@@ -184,19 +183,6 @@ export default function MovieEditPage() {
           <div className="space-y-4">
             <h2 className="text-xl font-semibold border-b pb-2">Basic Information</h2>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Movie ID
-              </label>
-              <input
-                type="number"
-                name="id"
-                value={formData.id}
-                onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Unique numeric ID"
-              />
-            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
